@@ -1,8 +1,8 @@
 package com.breez.handler;
 
-import com.breez.dto.Response;
+import com.breez.model.Response;
 import com.breez.exception.UserAlreadyExistsException;
-import com.breez.service.CommonService;
+import com.breez.service.ResponseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,21 +20,19 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class GlobalExceptionHandler {
 
-	private final CommonService commonService;
-
 	@ExceptionHandler(AuthenticationException.class)
 	public ResponseEntity<Response> authenticationExceptionHandler(AuthenticationException e) {
-		return errorResponse(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		return ResponseService.errorResponse(HttpStatus.INTERNAL_SERVER_ERROR, Map.of("message", e.getMessage()));
 	}
 
 	@ExceptionHandler(UserAlreadyExistsException.class)
 	public ResponseEntity<Response> userAlreadyExistsExceptionHandler(UserAlreadyExistsException e) {
-		return errorResponse(e.getMessage(), HttpStatus.CONFLICT);
+		return ResponseService.errorResponse(HttpStatus.CONFLICT, Map.of("message", e.getMessage()));
 	}
 
 	@ExceptionHandler(UsernameNotFoundException.class)
 	public ResponseEntity<Response> usernameNotFoundExceptionHandler(UsernameNotFoundException e) {
-		return errorResponse(e.getMessage(), HttpStatus.NOT_FOUND);
+		return ResponseService.errorResponse(HttpStatus.NOT_FOUND, Map.of("message", e.getMessage()));
 	}
 
 	@ExceptionHandler(MethodArgumentNotValidException.class)
@@ -46,15 +44,7 @@ public class GlobalExceptionHandler {
 				.toList();
 
 		Map<String, Object> data = Map.of("errors", errors);
-		Response response = new Response(commonService.getTimestamp(), Response.Status.STATUS_ERROR.getValue(), data);
-
-		return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
-	}
-
-	private ResponseEntity<Response> errorResponse(String errorMessage, HttpStatus code) {
-		Map<String, Object> data = Map.of("message", errorMessage);
-		Response response = new Response(commonService.getTimestamp(), Response.Status.STATUS_ERROR.getValue(), data);
-		return new ResponseEntity<>(response, code);
+		return ResponseService.errorResponse(HttpStatus.FORBIDDEN, data);
 	}
 
 }

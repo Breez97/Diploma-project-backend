@@ -1,14 +1,14 @@
-package com.breez.dto;
+package com.breez.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.Map;
 
 @Getter
 @Setter
+@NoArgsConstructor
 @AllArgsConstructor
+@ToString
 public class Response {
 
 	private String timestamp;
@@ -28,4 +28,5 @@ public class Response {
 		}
 
 	}
+
 }
