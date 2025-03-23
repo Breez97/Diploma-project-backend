@@ -36,3 +36,6 @@ build/
 
 ### Configuration ###
 env.properties
+
+### Vaadin Generated Frontend ###
+/service-vaadin/src/main/frontend/
