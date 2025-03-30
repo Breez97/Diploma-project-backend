@@ -7,8 +7,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/service-authentication/api/v1/test")
 @RequiredArgsConstructor
+@RequestMapping("/service-authentication/api/test")
 public class TestController {
 
 	private final UserService userService;

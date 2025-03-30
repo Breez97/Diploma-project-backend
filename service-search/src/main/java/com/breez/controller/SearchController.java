@@ -2,6 +2,7 @@ package com.breez.controller;
 
 import com.breez.model.Response;
 import com.breez.service.ResponseService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -11,7 +12,8 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/service-search/api/v1")
+@RequiredArgsConstructor
+@RequestMapping("/service-search/api")
 public class SearchController {
 
 	@GetMapping("/search")

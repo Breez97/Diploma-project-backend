@@ -11,4 +11,4 @@ spring:
         - id: SERVICE-SEARCH
           uri: http://localhost:${SERVICE_SEARCH_PORT}
           predicates:
-            - Path=/service-search/api/v1/search/**
+            - Path=/service-search/api/search/**
