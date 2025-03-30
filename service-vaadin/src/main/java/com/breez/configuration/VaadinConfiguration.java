@@ -16,7 +16,7 @@ public class VaadinConfiguration {
 	@Bean
 	public WebClient webClient() {
 		return WebClient.builder()
-				.baseUrl("http://localhost:" + apiGatewayPort + "/service-search/api/v1")
+				.baseUrl("http://localhost:" + apiGatewayPort + "/service-search/api")
 				.defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
 				.build();
 	}

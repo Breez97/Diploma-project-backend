@@ -1,15 +1,15 @@
 package com.breez.service;
 
 import com.breez.model.Response;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 @Service
+@RequiredArgsConstructor
 public class SearchService {
 
-	@Autowired
-	private WebClient webClient;
+	private final WebClient webClient;
 
 	public Response search(String market) {
 		return webClient.get()
