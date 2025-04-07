@@ -4,10 +4,11 @@ import com.breez.exception.EmptyResponseException;
 import com.breez.exception.InvalidParametersException;
 import com.breez.model.Response;
 import com.breez.service.ResponseService;
-import com.breez.service.SearchService;
+import com.breez.service.WildberriesService;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -22,15 +23,15 @@ import java.util.Map;
 @RequestMapping("/service-search/api")
 public class WildberriesController {
 
-	private final SearchService searchService;
+	private final WildberriesService wildberriesService;
 
-	@GetMapping("/wildberries")
-	public Mono<ResponseEntity<Response>> wildberriesFetchData(@RequestParam(value = "title", required = false) String title) {
+	@GetMapping(value = "/wildberries", produces = MediaType.APPLICATION_JSON_VALUE)
+	public Mono<ResponseEntity<Response>> fetchData(@RequestParam(value = "title", required = false) String title) {
 		if (StringUtils.isBlank(title)) {
 			return Mono.error(new InvalidParametersException(HttpStatus.BAD_REQUEST, "Invalid parameter: title"));
 		}
 		String formattedTitle = title.replace(" ", "+");
-		return searchService.wildberriesFetchData(formattedTitle)
+		return wildberriesService.fetchData(formattedTitle)
 				.switchIfEmpty(Mono.error(new EmptyResponseException(HttpStatus.NOT_FOUND, "Wildberries: No products found")))
 				.map(products -> {
 					Map<String, Object> data = Map.of("products", products);
@@ -38,12 +39,17 @@ public class WildberriesController {
 				});
 	}
 
-	@GetMapping("/wildberries/product")
-	public Mono<ResponseEntity<Response>> wildberriesProductFetchData(@RequestParam(value = "id") Long id) {
+	@GetMapping(value = "/wildberries/product", produces = MediaType.APPLICATION_JSON_VALUE)
+	public Mono<ResponseEntity<Response>> fetchDataProduct(@RequestParam(value = "id", required = false) Long id) {
 		if (id == null) {
-			return Mono.error(new InvalidParametersException(HttpStatus.BAD_REQUEST, "Invalid parameter: title"));
+			return Mono.error(new InvalidParametersException(HttpStatus.BAD_REQUEST, "Invalid parameter: id"));
 		}
-		return null;
+		return wildberriesService.fetchDataProduct(id)
+				.switchIfEmpty(Mono.error(new EmptyResponseException(HttpStatus.NOT_FOUND, String.format("Wildberries: No info for product with id=%d found", id))))
+				.map(info -> {
+					Map<String, Object> data = Map.of("info", info);
+					return ResponseService.successResponse(data);
+				});
 	}
 
 }
