@@ -6,10 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Component
 public class WildberriesUtil extends CommonUtil {
@@ -41,19 +38,79 @@ public class WildberriesUtil extends CommonUtil {
 	private Map<String, Object> extractProductData(JsonNode productNode, JsonNode idNode) {
 		Map<String, Object> productData = new LinkedHashMap<>();
 		long id = idNode.asLong();
+		String externalLink = "https://www.wildberries.ru/catalog/" + id + "/detail.aspx";
 		String title = capitalizeFirstLetter(productNode.path("name").asText());
 		String imageUrl = getImageUrl(id);
 		String brandNode = productNode.path("brand").asText();
-		String brand = StringUtils.isBlank(brandNode) ? null : brandNode;
-		long price = productNode.path("sizes").get(0).path("price").path("product").asInt() / 100;
+		String brand = StringUtils.isBlank(brandNode) ? null : capitalizeFirstLetter(brandNode);
+		String priceNode = productNode.path("sizes").get(0).path("price").path("product").asText();
+		String price = cutPrice(priceNode);
+		String feedbacksNode = productNode.path("feedbacks").asText();
+		String feedbacks = StringUtils.isBlank(feedbacksNode) || "0".equals(feedbacksNode) ? null : feedbacksNode;
+		String reviewRatingNode = productNode.path("reviewRating").asText();
+		String reviewRating = StringUtils.isBlank(reviewRatingNode) || "0".equals(reviewRatingNode) ? null : reviewRatingNode;
 		String productInfoLink = getProductInfoLink(id);
 		productData.put("id", id);
+		productData.put("externalLink", externalLink);
 		productData.put("title", title);
 		productData.put("imageUrl", imageUrl);
 		productData.put("brand", brand);
 		productData.put("price", price);
+		productData.put("feedbacks", feedbacks);
+		productData.put("reviewRating", reviewRating);
 		productData.put("productInfoLink", productInfoLink);
 		return productData;
+	}
+
+	public Mono<Map<String, Object>> extractProductInfo(String response) {
+		if (StringUtils.isBlank(response)) {
+			return null;
+		}
+
+		try {
+			ObjectMapper objectMapper = new ObjectMapper();
+			JsonNode rootNode = objectMapper.readTree(response);
+			Map<String, Object> productInfoList = new LinkedHashMap<>();
+			long id = rootNode.path("nm_id").asLong();
+			String externalLink = "https://www.wildberries.ru/catalog/" + id + "/detail.aspx";
+			String title = capitalizeFirstLetter(rootNode.path("imt_name").asText());
+			String description = rootNode.path("description").asText();
+			productInfoList.put("id", id);
+			productInfoList.put("externalLink", externalLink);
+			productInfoList.put("title", title);
+			productInfoList.put("imageUrl", getImageUrl(id));
+			productInfoList.put("description", description);
+			JsonNode optionsNode = rootNode.path("grouped_options");
+			if (optionsNode.isArray()) {
+				List<Object> optionsMap = new LinkedList<>();
+				for (JsonNode optionNode : optionsNode) {
+					Map<String, Object> groupMap = extractGroupMap(rootNode, optionNode);
+					optionsMap.add(groupMap);
+				}
+				productInfoList.put("options", optionsMap);
+			}
+			return Mono.just(productInfoList);
+		} catch (Exception e) {
+			return Mono.error(e);
+		}
+	}
+
+	private Map<String, Object> extractGroupMap(JsonNode rootNode, JsonNode infoNode) {
+		Map<String, Object> infoMap = new LinkedHashMap<>();
+		String groupName = infoNode.path("group_name").asText();
+		infoMap.put("group_name", groupName);
+		List<Map<String, Object>> optionsList = new ArrayList<>();
+		JsonNode optionsNode = infoNode.path("options");
+		if (optionsNode.isArray()) {
+			for (JsonNode optionNode : optionsNode) {
+				Map<String, Object> optionMap = new LinkedHashMap<>();
+				optionMap.put("name", optionNode.path("name").asText());
+				optionMap.put("value", optionNode.path("value").asText());
+				optionsList.add(optionMap);
+			}
+		}
+		infoMap.put("options", optionsList);
+		return infoMap;
 	}
 
 	private String getImageUrl(long id) {
@@ -70,6 +127,16 @@ public class WildberriesUtil extends CommonUtil {
 		String basketNum = getBasketNum(vol);
 
 		return String.format("https://basket-%s.wbbasket.ru/vol%d/part%d/%d/info/ru/card.json", basketNum, vol, part, id);
+	}
+
+	private String cutPrice(String currentPrice) {
+		if (StringUtils.isBlank(currentPrice)) {
+			return null;
+		}
+		if (currentPrice.length() > 2) {
+			return currentPrice.substring(0, currentPrice.length() - 2);
+		}
+		return null;
 	}
 
 	private String getBasketNum(long vol) {

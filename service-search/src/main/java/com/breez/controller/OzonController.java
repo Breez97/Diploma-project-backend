@@ -1,6 +1,7 @@
 package com.breez.controller;
 
 import com.breez.exception.EmptyResponseException;
+import com.breez.exception.InvalidParametersException;
 import com.breez.exception.ServerException;
 import com.breez.model.Response;
 import com.breez.service.OzonService;
@@ -46,6 +47,17 @@ public class OzonController {
 			Thread.currentThread().interrupt();
 			throw new ServerException(HttpStatus.SERVICE_UNAVAILABLE, "Ozon: Interrupted while processing request");
 		}
+	}
+
+	@GetMapping(value = "/ozon/product", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Response> makeRequestProduct(@RequestParam(value = "id", required = false) String paramId) {
+		long id;
+		try {
+			id = Long.parseLong(paramId);
+		} catch (Exception e) {
+			throw new InvalidParametersException(HttpStatus.BAD_REQUEST, "Invalid parameter: id");
+		}
+		return null;
 	}
 
 }

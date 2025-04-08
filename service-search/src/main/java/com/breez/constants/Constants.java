@@ -20,18 +20,14 @@ public class Constants {
 
 	// По популярности
 	public static final String WILDBERRIES_SORT_POPULAR = "popular";
-	// По рейтингу
-	public static final String WILDBERRIES_SORT_RATING = "rate";
+	// По новинкам
+	public static final String WILDBERRIES_SORT_NEW = "newly";
 	// По пвозрастанию цены
 	public static final String WILDBERRIES_SORT_PRICE_UP = "priceup";
 	// По убыванию цены
 	public static final String WILDBERRIES_SORT_PRICE_DOWN = "pricedown";
-	// По новинкам
-	public static final String WILDBERRIES_SORT_NEW = "newly";
-	// Сначала выгодные
-	public static final String WILDBERRIES_SORT_BETTER_PRICE = "benefit";
-
-	public static final int WILDBERRIES_AMOUNT = 30;
+	// По рейтингу
+	public static final String WILDBERRIES_SORT_RATING = "rate";
 
 	// Ozon
 	public static final String OZON_BASE_URL = "https://www.ozon.ru/api/entrypoint-api.bx/page/json/v2?url=";
@@ -50,9 +46,5 @@ public class Constants {
 	public static final String OZON_SORT_EXPENSIVE = "price_desc";
 	// С высоким рейтингом
 	public static final String OZON_SORT_RATING = "rating";
-	// С большими скидками
-	public static final String OZON_SORT_DISCOUNT = "discount";
-
-	public static final int OZON_AMOUNT = 30;
 
 }

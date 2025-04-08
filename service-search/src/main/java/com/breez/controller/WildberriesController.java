@@ -40,16 +40,16 @@ public class WildberriesController {
 	}
 
 	@GetMapping(value = "/wildberries/product", produces = MediaType.APPLICATION_JSON_VALUE)
-	public Mono<ResponseEntity<Response>> fetchDataProduct(@RequestParam(value = "id", required = false) Long id) {
-		if (id == null) {
+	public Mono<ResponseEntity<Response>> fetchDataProduct(@RequestParam(value = "id", required = false) String paramId) {
+		long id;
+		try {
+			id = Long.parseLong(paramId);
+		} catch (Exception e) {
 			return Mono.error(new InvalidParametersException(HttpStatus.BAD_REQUEST, "Invalid parameter: id"));
 		}
 		return wildberriesService.fetchDataProduct(id)
 				.switchIfEmpty(Mono.error(new EmptyResponseException(HttpStatus.NOT_FOUND, String.format("Wildberries: No info for product with id=%d found", id))))
-				.map(info -> {
-					Map<String, Object> data = Map.of("info", info);
-					return ResponseService.successResponse(data);
-				});
+				.map(ResponseService::successResponse);
 	}
 
 }

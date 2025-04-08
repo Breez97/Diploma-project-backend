@@ -25,13 +25,13 @@ import static com.breez.constants.Constants.*;
 public class OzonService {
 
 	private final HttpClient httpClient;
-	private final OzonUtil ozonJsonParserUtil;
+	private final OzonUtil ozonUril;
 
 	public List<Map<String, Object>> makeRequest(String title) throws IOException, InterruptedException {
 		String responseBody = getResponseBody(title);
-		String category = ozonJsonParserUtil.extractFirstCategoryValue(responseBody);
+		String category = ozonUril.extractFirstCategoryValue(responseBody);
 		String searchResponseBody = getSearchResponseBody(title, category);
-		return ozonJsonParserUtil.extractResultProducts(searchResponseBody);
+		return ozonUril.extractResultProducts(searchResponseBody);
 	}
 
 	private String getResponseBody(String title) throws IOException, InterruptedException {
@@ -44,7 +44,7 @@ public class OzonService {
 	}
 
 	private String getSearchResponseBody(String title, String category) throws IOException, InterruptedException {
-		HttpRequest request = createRequest(OZON_BASE_URL + category + "?category_was_predicted=" + (category != null) + "&deny_category_prediction=true&from_global=true&layout_page_index=2&page=1&paginator_token=3618992&search_page_state=ZTyWv3PbdnpxslZbkHhw7VH_jtjEr10CyAedWaImdMe__4v5IFS4TUkv7-w_R4DT4FJk1JIuc4-cWKHyUsFmg4wGpQ54FRjeGeNy2bPD-lbxsyn4b-6baUmQAiDy&sorting="+ OZON_SORT_POPULAR + "&start_page_id=940e64c1968c1684bcf866c50f7c93b6&text=" + title)
+		HttpRequest request = createRequest(OZON_BASE_URL + category + "?category_was_predicted=" + (category != null) + "&deny_category_prediction=true&from_global=true&layout_page_index=2&page=" + OZON_PAGE + "&paginator_token=3618992&search_page_state=ZTyWv3PbdnpxslZbkHhw7VH_jtjEr10CyAedWaImdMe__4v5IFS4TUkv7-w_R4DT4FJk1JIuc4-cWKHyUsFmg4wGpQ54FRjeGeNy2bPD-lbxsyn4b-6baUmQAiDy&sorting="+ OZON_SORT_POPULAR + "&start_page_id=940e64c1968c1684bcf866c50f7c93b6&text=" + title)
 				.GET()
 				.build();
 
