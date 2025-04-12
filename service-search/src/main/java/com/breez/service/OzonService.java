@@ -3,7 +3,8 @@ package com.breez.service;
 import com.breez.exception.ClientException;
 import com.breez.exception.DataParsingException;
 import com.breez.exception.ServerException;
-import com.breez.util.OzonUtil;
+import com.breez.util.ozon.OzonAllProductsUtil;
+import com.breez.util.ozon.OzonSingleProductUtil;
 import lombok.RequiredArgsConstructor;
 import org.brotli.dec.BrotliInputStream;
 import org.springframework.http.HttpStatus;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -22,32 +24,60 @@ import static com.breez.constants.Constants.*;
 
 @Service
 @RequiredArgsConstructor
-public class OzonService {
+public class OzonService implements HttpService {
 
 	private final HttpClient httpClient;
-	private final OzonUtil ozonUril;
+	private final OzonSingleProductUtil ozonSingleProductUtil;
+	private final OzonAllProductsUtil ozonAllProductsUtil;
 
-	public List<Map<String, Object>> makeRequest(String title) throws IOException, InterruptedException {
-		String responseBody = getResponseBody(title);
-		String category = ozonUril.extractFirstCategoryValue(responseBody);
-		String searchResponseBody = getSearchResponseBody(title, category);
-		return ozonUril.extractResultProducts(searchResponseBody);
+	@Override
+	public List<Map<String, Object>> makeRequest(Map<String, String> parameters) throws IOException, InterruptedException {
+		String url = OZON_BASE_URL + "/searchSuggestions/search/?text=" + parameters.get("title") + "&from_global=true";
+		String responseBody = getResponseBody(url);
+		String category = ozonAllProductsUtil.extractFirstCategoryValue(responseBody);
+		String searchUrl = OZON_BASE_URL + category + "?category_was_predicted=" + (category != null)
+				+ "&deny_category_prediction=true&from_global=true&layout_page_index=2&page=" + parameters.get("page")
+				+ "&paginator_token=3618992&sorting="+ parameters.get("sort") + "&start_page_id=940e64c1968c1684bcf866c50f7c93b6&text=" + parameters.get("title");
+		String searchResponseBody = getSearchResponseBody(searchUrl);
+		return ozonAllProductsUtil.getAllProductsFromResponse(searchResponseBody);
 	}
 
-	private String getResponseBody(String title) throws IOException, InterruptedException {
-		HttpRequest request = createRequest(OZON_BASE_URL + "/searchSuggestions/search/?text=" + title + "&from_global=true")
+	@Override
+	public Map<String, Object> makeRequestProduct(long id) throws IOException, InterruptedException {
+		String url = OZON_BASE_URL + "/product/" + id;
+		String responseBody = getResponseBody(url);
+		return ozonSingleProductUtil.getSingleProductFromResponse(responseBody, id);
+	}
+
+	@Override
+	public Map<String, String> getSearchParameters(String title, String sort, String page) {
+		Map<String, String> parameters = new HashMap<>();
+		String resultTitle = URLEncoder.encode(title, StandardCharsets.UTF_8);
+		String resultSort = switch (sort) {
+			case COMMON_SORT_NEW -> OZON_SORT_NEW;
+			case COMMON_SORT_PRICE_ASC -> OZON_SORT_PRICE_ASC;
+			case COMMON_SORT_PRICE_DESC -> OZON_SORT_PRICE_DESC;
+			case COMMON_SORT_RATING -> OZON_SORT_RATING;
+			default -> OZON_SORT_POPULAR;
+		};
+		parameters.put("title", resultTitle);
+		parameters.put("sort", resultSort);
+		parameters.put("page", page);
+		return parameters;
+	}
+
+	private String getResponseBody(String url) throws IOException, InterruptedException {
+		HttpRequest request = createRequest(url)
 				.GET()
 				.build();
-
 		HttpResponse<byte[]> response = httpClient.send(request, HttpResponse.BodyHandlers.ofByteArray());
 		return convertResponseBody(response);
 	}
 
-	private String getSearchResponseBody(String title, String category) throws IOException, InterruptedException {
-		HttpRequest request = createRequest(OZON_BASE_URL + category + "?category_was_predicted=" + (category != null) + "&deny_category_prediction=true&from_global=true&layout_page_index=2&page=" + OZON_PAGE + "&paginator_token=3618992&search_page_state=ZTyWv3PbdnpxslZbkHhw7VH_jtjEr10CyAedWaImdMe__4v5IFS4TUkv7-w_R4DT4FJk1JIuc4-cWKHyUsFmg4wGpQ54FRjeGeNy2bPD-lbxsyn4b-6baUmQAiDy&sorting="+ OZON_SORT_POPULAR + "&start_page_id=940e64c1968c1684bcf866c50f7c93b6&text=" + title)
+	private String getSearchResponseBody(String url) throws IOException, InterruptedException {
+		HttpRequest request = createRequest(url)
 				.GET()
 				.build();
-
 		HttpResponse<byte[]> response = httpClient.send(request, HttpResponse.BodyHandlers.ofByteArray());
 		return convertResponseBody(response);
 	}
