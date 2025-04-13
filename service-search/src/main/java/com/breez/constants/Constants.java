@@ -25,6 +25,8 @@ public class Constants {
 
 	public static final String WILDBERRIES_EXTERNAL_LINK = "https://www.wildberries.ru";
 
+	public static final String WILDBERRIES_PRODUCT_INFO_LINK = "https://card.wb.ru/cards/v2/detail?appType=1&curr=rub&dest=-1257786&hide_dtype=13&spp=30&ab_testing=false&lang=ru&nm=";
+
 	public static final String WILDBERRIES_BASE_URL = "https://search.wb.ru/exactmatch/ru/common/v9/search?ab_testing=false&appType=1&curr=rub&";
 
 	public static final String WILDBERRIES_X_CAPTCHA_ID = "Catalog 1|1|1745257722|AA==|9d3c8195ec9f40b0abc3eec89fe4985e|GbYNyALGK4iC6A49gulA7O9i1PNDS5l29DKM810XEMM";

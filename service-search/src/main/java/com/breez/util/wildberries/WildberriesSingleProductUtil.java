@@ -1,59 +1,49 @@
 package com.breez.util.wildberries;
 
+import com.breez.exception.DataParsingException;
 import com.breez.mapper.ObjectMapperSingleton;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-import reactor.core.publisher.Mono;
 
+import java.io.IOException;
 import java.util.*;
 
 @Component
 public class WildberriesSingleProductUtil extends WildberriesUtil {
 
-	public Map<String, Object> getSingleProductFromResponse(String response) {
+	private static final Logger logger = LoggerFactory.getLogger(WildberriesSingleProductUtil.class);
+
+	public Map<String, Object> getDescriptionAndOptionsFromResponse(String response, Map<String, Object> data) {
 		if (StringUtils.isBlank(response)) {
 			return null;
 		}
 
 		try {
 			JsonNode rootNode = ObjectMapperSingleton.getInstance().readTree(response);
-			return getProductInfo(rootNode);
-		} catch (Exception e) {
-			return null;
+			return getProductInfo(rootNode, data);
+		} catch (IOException e) {
+			logger.error("Wildberries getDescriptionAndOptionsFromResponse error={}", e.getMessage());
+			throw new DataParsingException(HttpStatus.INTERNAL_SERVER_ERROR, "Ozon: " + e.getMessage());
 		}
 	}
 
-	private Map<String, Object> getProductInfo(JsonNode rootNode) {
+	private Map<String, Object> getProductInfo(JsonNode rootNode, Map<String, Object> data) {
 		return Optional.ofNullable(rootNode)
-				.map(nmIdNode -> nmIdNode.path("nm_id"))
-				.map(idNode -> extractProductInfo(rootNode, idNode))
+				.map(dataNode -> dataNode.path("data"))
+				.map(currentProduct -> extractProductInfo(rootNode, data))
 				.orElse(Collections.emptyMap());
 	}
 
-	private Map<String, Object> extractProductInfo(JsonNode rootNode, JsonNode idNode) {
-		long id = idNode.asLong();
-		Map<String, Object> productData = getEmptyDataSingleProduct(id);
-		String externalLink = getExternalLinkWildberries(id);
-		String title = extractTitle(rootNode);
-		String imageUrl = getImageUrl(id);
+	private Map<String, Object> extractProductInfo(JsonNode rootNode, Map<String, Object> data) {
 		String description = extractDescription(rootNode);
 		List<Object> options = extractOptions(rootNode);
-		productData.put("id", id);
-		productData.put("externalLink", stringOrNull(externalLink));
-		productData.put("title", stringOrNull(title));
-		productData.put("imageUrl", stringOrNull(imageUrl));
-		productData.put("description", stringOrNull(description));
-		productData.put("options", listOrNull(options));
-		return productData;
-	}
-
-	private String extractTitle(JsonNode rootNode) {
-		return Optional.ofNullable(rootNode)
-				.map(imtNameNode -> imtNameNode.path("imt_name"))
-				.map(JsonNode::asText)
-				.map(this::capitalizeFirstLetter)
-				.orElse(null);
+		data.put("description", stringOrNull(description));
+		data.put("options", listOrNull(options));
+		return data;
 	}
 
 	private String extractDescription(JsonNode rootNode) {
@@ -98,14 +88,6 @@ public class WildberriesSingleProductUtil extends WildberriesUtil {
 			}
 		}
 		return optionsList;
-	}
-
-	public String getProductInfoLink(long id) {
-		long vol = id / 100000;
-		long part = id / 1000;
-		String basketNum = getBasketNum(vol);
-
-		return String.format("https://basket-%s.wbbasket.ru/vol%d/part%d/%d/info/ru/card.json", basketNum, vol, part, id);
 	}
 
 }

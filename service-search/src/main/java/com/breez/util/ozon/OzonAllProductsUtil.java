@@ -4,6 +4,8 @@ import com.breez.exception.DataParsingException;
 import com.breez.mapper.ObjectMapperSingleton;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
@@ -13,7 +15,8 @@ import java.util.*;
 @Component
 public class OzonAllProductsUtil extends OzonUtil {
 
-	private static final String REGEX_NUMBERS = "\\D";
+	private static final Logger logger = LoggerFactory.getLogger(OzonAllProductsUtil.class);
+
 	private static final String REGEX_TAGS = "<[^>]*>";
 
 	public List<Map<String, Object>> getAllProductsFromResponse (String response) {
@@ -26,6 +29,7 @@ public class OzonAllProductsUtil extends OzonUtil {
 			JsonNode productsNode = getProductNode(rootNode);
 			return convertProductsNodeToList(productsNode);
 		} catch (Exception e) {
+			logger.error("Ozon: getAllProductsFromResponse error={}", e.getMessage());
 			throw new DataParsingException(HttpStatus.INTERNAL_SERVER_ERROR, "Ozon: " + e.getMessage());
 		}
 	}
@@ -38,6 +42,7 @@ public class OzonAllProductsUtil extends OzonUtil {
 					try {
 						return ObjectMapperSingleton.getInstance().readTree(searchResultsText);
 					} catch (IOException e) {
+						logger.info("Ozon: getProductNode error={}", e.getMessage());
 						throw new DataParsingException(HttpStatus.INTERNAL_SERVER_ERROR, "Ozon: " + e.getMessage());
 					}
 				})
@@ -46,7 +51,7 @@ public class OzonAllProductsUtil extends OzonUtil {
 	}
 
 	private List<Map<String, Object>> convertProductsNodeToList(JsonNode productsNode) {
-		List<Map<String, Object>> productsList = new ArrayList<>();
+		List<Map<String, Object>> productsList = new LinkedList<>();
 		for (JsonNode productNode : productsNode) {
 			Optional.ofNullable(productNode)
 					.map(node -> node.path("skuId"))
@@ -58,7 +63,7 @@ public class OzonAllProductsUtil extends OzonUtil {
 
 	private Map<String, Object> extractProduct(JsonNode productNode, JsonNode idNode) {
 		long id = idNode.asLong();
-		Map<String, Object> productData = getEmptyDataAllProducts(id);
+		Map<String, Object> productData = getEmptyData(id);
 		String externalLink = getExternalLinkOzon(id);
 		String title = extractTitle(productNode);
 		String imageUrl = extractImageUrl(productNode);
@@ -230,13 +235,6 @@ public class OzonAllProductsUtil extends OzonUtil {
 			}
 		}
 		return Optional.empty();
-	}
-
-	private String extractDigitsFromString(String str) {
-		if (str == null || str.isEmpty()) {
-			return null;
-		}
-		return str.replaceAll(REGEX_NUMBERS, "");
 	}
 
 }

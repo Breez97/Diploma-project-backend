@@ -1,10 +1,16 @@
 package com.breez.util.wildberries;
 
 import com.breez.util.CommonUtil;
+import org.springframework.stereotype.Component;
 
 import static com.breez.constants.Constants.WILDBERRIES_EXTERNAL_LINK;
 
-public abstract class WildberriesUtil extends CommonUtil {
+@Component
+public class WildberriesUtil extends CommonUtil {
+
+	protected String getExternalLinkWildberries(long id) {
+		return WILDBERRIES_EXTERNAL_LINK + "/catalog/" + id + "/detail.aspx";
+	}
 
 	protected String getImageUrl(long id) {
 		long vol = id / 100000;
@@ -13,13 +19,10 @@ public abstract class WildberriesUtil extends CommonUtil {
 		return String.format("https://basket-%s.wbbasket.ru/vol%d/part%d/%d/images/big/1.webp", basketNum, vol, part, id);
 	}
 
-	protected String getExternalLinkWildberries(long id) {
-		return WILDBERRIES_EXTERNAL_LINK + "/catalog/" + id + "/detail.aspx";
-	}
-
-	protected String getBasketNum(long vol) {
+	public String getBasketNum(long vol) {
 		// List of current baskets
 		// https://static-basket-01.wbbasket.ru/vol2/site/j/spa/index.7f239ace2fcf8a7bb122.js
+		// search: "break;default:r=""
 		if (vol <= 143) return "01";
 		else if (vol <= 287) return "02";
 		else if (vol <= 431) return "03";

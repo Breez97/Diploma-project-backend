@@ -5,8 +5,8 @@ import com.breez.exception.DataParsingException;
 import com.breez.exception.ServerException;
 import com.breez.util.ozon.OzonAllProductsUtil;
 import com.breez.util.ozon.OzonSingleProductUtil;
-import lombok.RequiredArgsConstructor;
 import org.brotli.dec.BrotliInputStream;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -23,12 +23,18 @@ import java.util.*;
 import static com.breez.constants.Constants.*;
 
 @Service
-@RequiredArgsConstructor
 public class OzonService implements HttpService {
 
 	private final HttpClient httpClient;
 	private final OzonSingleProductUtil ozonSingleProductUtil;
 	private final OzonAllProductsUtil ozonAllProductsUtil;
+
+	@Autowired
+	public OzonService(HttpClient httpClient, OzonSingleProductUtil ozonSingleProductUtil, OzonAllProductsUtil ozonAllProductsUtil) {
+		this.httpClient = httpClient;
+		this.ozonSingleProductUtil = ozonSingleProductUtil;
+		this.ozonAllProductsUtil = ozonAllProductsUtil;
+	}
 
 	@Override
 	public List<Map<String, Object>> makeRequest(Map<String, String> parameters) throws IOException, InterruptedException {
@@ -96,7 +102,6 @@ public class OzonService implements HttpService {
 		int statusCode = response.statusCode();
 
 		if (statusCode == 200) {
-			response.headers().map().forEach((k, v) -> System.out.println("  " + k + ": " + v));
 			byte[] responseBodyBytes = response.body();
 			Optional<String> contentEncoding = response.headers().firstValue("Content-Encoding");
 			if (contentEncoding.isPresent()) {

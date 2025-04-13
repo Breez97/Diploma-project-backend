@@ -7,7 +7,7 @@ import com.breez.model.Response;
 import com.breez.service.CommonService;
 import com.breez.service.ResponseService;
 import com.breez.service.WildberriesService;
-import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -20,16 +20,20 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
-import static com.breez.constants.Constants.COMMON_PAGE;
-import static com.breez.constants.Constants.COMMON_SORT_POPULAR;
+import static com.breez.constants.Constants.*;
 
 @RestController
-@RequiredArgsConstructor
-@RequestMapping("/service-search/api")
+@RequestMapping("/api/v1")
 public class WildberriesController {
 
 	private final CommonService commonService;
 	private final WildberriesService wildberriesService;
+
+	@Autowired
+	public WildberriesController(CommonService commonService, WildberriesService wildberriesService) {
+		this.commonService = commonService;
+		this.wildberriesService = wildberriesService;
+	}
 
 	@GetMapping(value = "/wildberries", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Response> makeRequest(
@@ -37,7 +41,7 @@ public class WildberriesController {
 			@RequestParam(value = "sort", required = false, defaultValue = COMMON_SORT_POPULAR) String sort,
 			@RequestParam(value = "page", required = false, defaultValue = COMMON_PAGE) String page) {
 		try {
-			commonService.validateInputParameters(title, sort, page);
+			commonService.validateInputParameters(WILDBERRIES, title, sort, page);
 
 			Map<String, String> parameters = wildberriesService.getSearchParameters(title, sort, page);
 			List<Map<String, Object>> response = wildberriesService.makeRequest(parameters);
@@ -60,11 +64,16 @@ public class WildberriesController {
 			id = Long.parseLong(paramId);
 			Map<String, Object> info = wildberriesService.makeRequestProduct(id);
 			if (info == null || info.isEmpty()) {
-				throw new EmptyResponseException(HttpStatus.NOT_FOUND, String.format("Ozon: No info for product with id=%d found", id));
+				throw new EmptyResponseException(HttpStatus.NOT_FOUND, String.format("Wildberries: No info for product with id=%d found", id));
 			}
 			return ResponseService.successResponse(info);
-		} catch (Exception e) {
-			throw new InvalidParametersException(HttpStatus.BAD_REQUEST, "Invalid parameter: id");
+		} catch (NumberFormatException e) {
+			throw new InvalidParametersException(HttpStatus.BAD_REQUEST, "Wildberries: Invalid parameter: id");
+		} catch (IOException e) {
+			throw new ServerException(HttpStatus.BAD_GATEWAY, "Wildberries: Failed to fetch data from source");
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+			throw new ServerException(HttpStatus.SERVICE_UNAVAILABLE, "Wildberries: Interrupted while processing request");
 		}
 	}
 

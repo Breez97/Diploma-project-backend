@@ -12,15 +12,15 @@ import static com.breez.constants.Constants.SET_AVAILABLE_SORT;
 @Service
 public class CommonService {
 
-	public void validateInputParameters(String title, String sort, String page) {
-		validateParameter(title, "title", StringUtils::isBlank);
-		validateParameter(sort, "sort", this::isSortInvalid);
-		validateParameter(page, "page", this::isPageInvalid);
+	public void validateInputParameters(String marketplace, String title, String sort, String page) {
+		validateParameter(marketplace, title, "title", StringUtils::isBlank);
+		validateParameter(marketplace, sort, "sort", this::isSortInvalid);
+		validateParameter(marketplace, page, "page", this::isPageInvalid);
 	}
 
-	private void validateParameter(String value, String parameterName, Predicate<String> validator) {
+	private void validateParameter(String marketplace, String value, String parameterName, Predicate<String> validator) {
 		if (validator.test(value)) {
-			throw new InvalidParametersException(HttpStatus.BAD_REQUEST, "Invalid parameter: " + parameterName);
+			throw new InvalidParametersException(HttpStatus.BAD_REQUEST, marketplace + ": Invalid parameter " + parameterName);
 		}
 	}
 

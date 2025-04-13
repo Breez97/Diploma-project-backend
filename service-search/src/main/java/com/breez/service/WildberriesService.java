@@ -4,7 +4,9 @@ import com.breez.exception.ClientException;
 import com.breez.exception.ServerException;
 import com.breez.util.wildberries.WildberriesAllProductsUtil;
 import com.breez.util.wildberries.WildberriesSingleProductUtil;
-import lombok.RequiredArgsConstructor;
+import com.breez.util.wildberries.WildberriesUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -20,12 +22,23 @@ import java.util.Map;
 import static com.breez.constants.Constants.*;
 
 @Service
-@RequiredArgsConstructor
 public class WildberriesService implements HttpService {
 
 	private final HttpClient httpClient;
+	private final WildberriesUtil wildberriesUtil;
 	private final WildberriesSingleProductUtil wildberriesSingleProductUtil;
 	private final WildberriesAllProductsUtil wildberriesAllProductsUtil;
+
+	@Autowired
+	public WildberriesService(HttpClient httpClient,
+							  @Qualifier("wildberriesUtil") WildberriesUtil wildberriesUtil,
+							  @Qualifier("wildberriesSingleProductUtil") WildberriesSingleProductUtil wildberriesSingleProductUtil,
+							  @Qualifier("wildberriesAllProductsUtil") WildberriesAllProductsUtil wildberriesAllProductsUtil) {
+		this.httpClient = httpClient;
+		this.wildberriesUtil = wildberriesUtil;
+		this.wildberriesSingleProductUtil = wildberriesSingleProductUtil;
+		this.wildberriesAllProductsUtil = wildberriesAllProductsUtil;
+	}
 
 	@Override
 	public List<Map<String, Object>> makeRequest(Map<String, String> parameters) throws IOException, InterruptedException {
@@ -38,9 +51,12 @@ public class WildberriesService implements HttpService {
 
 	@Override
 	public Map<String, Object> makeRequestProduct(long id) throws IOException, InterruptedException {
-		String url = wildberriesSingleProductUtil.getProductInfoLink(id);
+		String url = getProductInfoLink(id);
 		String responseBody = getResponseBody(url);
-		return wildberriesSingleProductUtil.getSingleProductFromResponse(responseBody);
+		Map<String, Object> data = wildberriesAllProductsUtil.getProductInfoFromResponse(id, responseBody);
+		String descriptionAndOptionsUrl = getDescriptionAndOptionsInfoLink(id);
+		String responseBodyDescriptionAndOptions = getResponseBody(descriptionAndOptionsUrl);
+		return wildberriesSingleProductUtil.getDescriptionAndOptionsFromResponse(responseBodyDescriptionAndOptions, data);
 	}
 
 	@Override
@@ -67,7 +83,6 @@ public class WildberriesService implements HttpService {
 				.header("accept-language", "en,en-US;q=0.9,ru;q=0.8")
 				.header("origin", "https://www.wildberries.ru")
 				.header("priority", "u=1, i")
-				.header("referer", "https://www.wildberries.ru/catalog/0/search.aspx?search=%D0%BA%D1%80%D0%BE%D1%81%D1%81%D0%BE%D0%B2%D0%BA%D0%B8")
 				.header("sec-ch-ua", "Google Chrome;v=135, Not-A.Brand;v=8, Chromium;v=135")
 				.header("user-agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36")
 				.header("x-captcha-id", WILDBERRIES_X_CAPTCHA_ID)
@@ -84,6 +99,18 @@ public class WildberriesService implements HttpService {
 			throw new ServerException(HttpStatus.valueOf(statusCode), "Wildberries: Server error");
 		}
 		return null;
+	}
+
+	private String getProductInfoLink(long id) {
+		return WILDBERRIES_PRODUCT_INFO_LINK + id;
+	}
+
+	public String getDescriptionAndOptionsInfoLink(long id) {
+		long vol = id / 100000;
+		long part = id / 1000;
+		String basketNum = wildberriesUtil.getBasketNum(vol);
+
+		return String.format("https://basket-%s.wbbasket.ru/vol%d/part%d/%d/info/ru/card.json", basketNum, vol, part, id);
 	}
 
 }
