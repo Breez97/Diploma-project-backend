@@ -1,0 +1,28 @@
+server:
+  port: ${API_GATEWAY_PORT:8080}
+
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: service-search-api
+          uri: http://service-search:${SERVICE_SEARCH_PORT:8081}
+          predicates:
+            - Path=/api/v1/**
+
+        - id: service-search-openapi
+          uri: http://service-search:${SERVICE_SEARCH_PORT:8081}
+          predicates:
+            - Path=/v3/api-docs/service-search
+          filters:
+            - RewritePath=/v3/api-docs/service-search, /v3/api-docs
+
+springdoc:
+  swagger-ui:
+    path: /api-docs
+    urls:
+      - name: service-search
+        url: /v3/api-docs/service-search
+  api-docs:
+    groups:
+      enabled: true
