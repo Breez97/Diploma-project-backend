@@ -7,6 +7,7 @@
         <groupId>com.breez</groupId>
         <artifactId>diploma-project</artifactId>
         <version>1.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>api-gateway</artifactId>
@@ -16,16 +17,64 @@
         <maven.compiler.target>17</maven.compiler.target>
 
         <cloud.gateway.version>4.2.0</cloud.gateway.version>
+        <openapi.webflux.ui>2.8.6</openapi.webflux.ui>
 
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
     <dependencies>
         <dependency>
+            <groupId>com.breez</groupId>
+            <artifactId>common-library</artifactId>
+            <version>1.0-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-gateway</artifactId>
             <version>${cloud.gateway.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webflux-ui</artifactId>
+            <version>${openapi.webflux.ui}</version>
+        </dependency>
     </dependencies>
+
+    <profiles>
+        <profile>
+            <id>local</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <spring-boot.run.profiles>local</spring-boot.run.profiles>
+                <spring-boot.run.arguments>--spring.config.import=optional:file:../.env</spring-boot.run.arguments>
+            </properties>
+        </profile>
+        <profile>
+            <id>docker</id>
+            <properties/>
+        </profile>
+    </profiles>
+
+    <build>
+        <finalName>api-gateway</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>

@@ -1,0 +1,39 @@
+services:
+  api-gateway:
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
+    container_name: api-gateway-container
+    restart: on-failure
+    ports:
+      - "${API_GATEWAY_PORT}:${API_GATEWAY_PORT}"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - API_GATEWAY_PORT=${API_GATEWAY_PORT}
+      - SERVICE_SEARCH_PORT=${SERVICE_SEARCH_PORT}
+    env_file:
+      - ./.env
+    networks:
+      - docker-network
+    depends_on:
+      - service-search
+
+  service-search:
+    build:
+      context: .
+      dockerfile: service-search/Dockerfile
+    container_name: service-search-container
+    restart: on-failure
+    ports:
+      - "${SERVICE_SEARCH_PORT}:${SERVICE_SEARCH_PORT}"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SERVICE_SEARCH_PORT=${SERVICE_SEARCH_PORT}
+    env_file:
+      - ./.env
+    networks:
+      - docker-network
+
+networks:
+  docker-network:
+    driver: bridge
