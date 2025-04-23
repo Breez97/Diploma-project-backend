@@ -11,7 +11,7 @@
 
     <modules>
         <module>api-gateway</module>
-<!--        <module>service-authentication</module>-->
+        <module>service-user</module>
 <!--        <module>service-vaadin</module>-->
         <module>service-search</module>
         <module>common-library</module>

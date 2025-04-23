@@ -29,9 +29,9 @@ public class Constants {
 
 	public static final String WILDBERRIES_BASE_URL = "https://search.wb.ru/exactmatch/ru/common/v9/search?ab_testing=false&appType=1&curr=rub&";
 
-	public static final String WILDBERRIES_X_CAPTCHA_ID = "Catalog 1|1|1745257722|AA==|9d3c8195ec9f40b0abc3eec89fe4985e|GbYNyALGK4iC6A49gulA7O9i1PNDS5l29DKM810XEMM";
+	public static final String WILDBERRIES_X_CAPTCHA_ID = "Catalog 1|1|1745441540|AA==|7cbede1ed09e4d01a57fdc9755537c65|g66RJNOc2ZO05ZG72kHImAyfQGejol3flXNqYduAMid";
 
-	public static final String WILDBERRIES_X_QUERY_ID = "qid533684664174323952120250412112347";
+	public static final String WILDBERRIES_X_QUERY_ID = "qid533684664174323952120250423165235";
 
 	// По популярности
 	public static final String WILDBERRIES_SORT_POPULAR = "popular";

@@ -37,7 +37,7 @@ public class OzonAllProductsUtil extends OzonUtil {
 	private JsonNode getProductNode(JsonNode rootNode) {
 		return Optional.of(rootNode)
 				.map(node -> node.path("widgetStates"))
-				.map(widgetStatesNode -> widgetStatesNode.path("searchResultsV2-3669723-default-2").asText())
+				.map(widgetStatesNode -> widgetStatesNode.path("tileGridDesktop-3669724-default-2").asText())
 				.map(searchResultsText -> {
 					try {
 						return ObjectMapperSingleton.getInstance().readTree(searchResultsText);
@@ -54,7 +54,10 @@ public class OzonAllProductsUtil extends OzonUtil {
 		List<Map<String, Object>> productsList = new LinkedList<>();
 		for (JsonNode productNode : productsNode) {
 			Optional.ofNullable(productNode)
-					.map(node -> node.path("skuId"))
+					.map(topRightButtonsNode -> topRightButtonsNode.path("topRightButtons"))
+					.filter(JsonNode::isArray)
+					.map(favoriteProductMoleculeV2Node -> favoriteProductMoleculeV2Node.get(0).path("favoriteProductMoleculeV2"))
+					.map(node -> node.path("id"))
 					.map(idNode -> extractProduct(productNode, idNode))
 					.ifPresent(productsList::add);
 		}
@@ -94,11 +97,10 @@ public class OzonAllProductsUtil extends OzonUtil {
 	private Optional<JsonNode> findTitleInNode(JsonNode mainState) {
 		for (JsonNode state : mainState) {
 			Optional<JsonNode> textNode = Optional.ofNullable(state)
-					.map(idNode -> idNode.path("id"))
+					.map(typeNode -> typeNode.path("type"))
 					.map(JsonNode::asText)
-					.filter("name"::equals)
-					.flatMap(idNode -> Optional.ofNullable(state.path("atom")))
-					.flatMap(atomNode -> Optional.ofNullable(atomNode.path("textAtom")))
+					.filter("textAtom"::equals)
+					.flatMap(atomNode -> Optional.ofNullable(state.path("textAtom")))
 					.map(textAtomNode -> textAtomNode.path("text"));
 			if (textNode.isPresent()) {
 				return textNode;
@@ -129,18 +131,14 @@ public class OzonAllProductsUtil extends OzonUtil {
 
 	private Optional<JsonNode> findBrandInNode(JsonNode mainState) {
 		for (JsonNode state : mainState) {
-			Optional<JsonNode> textNode = Optional.ofNullable(state)
-					.map(atomNode -> atomNode.path("atom"))
-					.filter(atomNode -> "labelList".equals(atomNode.path("type").asText()))
-					.flatMap(atomNode -> {
-						for (JsonNode labelItem : atomNode.path("labelList").path("items")) {
-							String title = labelItem.path("title").asText(null);
-							if (title != null && title.contains("<b>")) {
-								return Optional.of(labelItem.path("title"));
-							}
-						}
-						return Optional.empty();
-					});
+			Optional<JsonNode> textNode = Optional.of(state)
+					.filter(s -> "labelList".equals(s.path("type").asText(null)))
+					.map(s -> s.path("labelList").path("items"))
+					.filter(items -> items.isArray() && !items.isEmpty())
+					.map(items -> items.get(0))
+					.filter(firstItem -> "tile-list-paid-brand".equals(
+							firstItem.path("testInfo").path("automatizationId").asText("")))
+					.map(firstItem -> firstItem.path("title"));
 			if (textNode.isPresent()) {
 				return textNode;
 			}
@@ -164,12 +162,13 @@ public class OzonAllProductsUtil extends OzonUtil {
 	private Optional<JsonNode> findPriceInNode(JsonNode mainState) {
 		for (JsonNode state : mainState) {
 			Optional<JsonNode> textNode = Optional.ofNullable(state)
-					.map(node -> node.path("atom"))
-					.filter(atomNode -> "priceV2".equals(atomNode.path("type").asText()))
-					.map(priceNode -> priceNode.path("priceV2").path("price"))
-					.filter(JsonNode::isArray)
-					.map(currentPriceNode -> currentPriceNode.get(0))
-					.map(priceNode -> priceNode.path("text"));
+					.filter(s -> "priceV2".equals(s.path("type").asText(null)))
+					.map(s -> s.path("priceV2"))
+					.map(priceV2Obj -> priceV2Obj.path("price"))
+					.filter(priceArray -> priceArray.isArray() && !priceArray.isEmpty())
+					.map(priceArray -> priceArray.get(0))
+					.map(firstPriceObject -> firstPriceObject.path("text"))
+					.filter(JsonNode::isTextual);
 			if (textNode.isPresent()) {
 				return textNode;
 			}
@@ -188,20 +187,20 @@ public class OzonAllProductsUtil extends OzonUtil {
 
 	private Optional<JsonNode> findReviewRatingInNode(JsonNode mainState) {
 		for (JsonNode state : mainState) {
-			Optional<JsonNode> textNode = Optional.ofNullable(state)
-					.map(atomNode -> atomNode.path("atom"))
-					.filter(atomNode -> "labelList".equals(atomNode.path("type").asText()))
-					.flatMap(atomNode -> {
-						for (JsonNode labelItem : atomNode.path("labelList").path("items")) {
-							String testInfoId = labelItem.path("testInfo").path("automatizationId").asText();
-							if ("tile-list-rating".equals(testInfoId)) {
-								return Optional.of(labelItem.path("title"));
-							}
+			if ("labelList".equals(state.path("type").asText(null))) {
+				JsonNode itemsNode = state.path("labelList").path("items");
+				if (itemsNode.isArray()) {
+					for (JsonNode labelItem : itemsNode) {
+						Optional<JsonNode> textNode = Optional.of(labelItem)
+								.filter(item -> "tile-list-rating".equals(
+										item.path("testInfo").path("automatizationId").asText("")))
+								.map(item -> item.path("title"))
+								.filter(JsonNode::isTextual);
+						if (textNode.isPresent()) {
+							return textNode;
 						}
-						return Optional.empty();
-					});
-			if (textNode.isPresent()) {
-				return textNode;
+					}
+				}
 			}
 		}
 		return Optional.empty();
@@ -218,20 +217,20 @@ public class OzonAllProductsUtil extends OzonUtil {
 
 	private Optional<JsonNode> findFeedbacksInNode(JsonNode mainState) {
 		for (JsonNode state : mainState) {
-			Optional<JsonNode> textNode = Optional.ofNullable(state)
-					.map(atomNode -> atomNode.path("atom"))
-					.filter(atomNode -> "labelList".equals(atomNode.path("type").asText()))
-					.flatMap(atomNode -> {
-						for (JsonNode labelItem : atomNode.path("labelList").path("items")) {
-							String testInfoId = labelItem.path("testInfo").path("automatizationId").asText();
-							if ("tile-list-comments".equals(testInfoId)) {
-								return Optional.of(labelItem.path("title"));
-							}
+			if ("labelList".equals(state.path("type").asText(null))) {
+				JsonNode itemsNode = state.path("labelList").path("items");
+				if (itemsNode.isArray()) {
+					for (JsonNode labelItem : itemsNode) {
+						Optional<JsonNode> textNode = Optional.of(labelItem)
+								.filter(item -> "tile-list-comments".equals(
+										item.path("testInfo").path("automatizationId").asText("")))
+								.map(item -> item.path("title"))
+								.filter(JsonNode::isTextual);
+						if (textNode.isPresent()) {
+							return textNode;
 						}
-						return Optional.empty();
-					});
-			if (textNode.isPresent()) {
-				return textNode;
+					}
+				}
 			}
 		}
 		return Optional.empty();
