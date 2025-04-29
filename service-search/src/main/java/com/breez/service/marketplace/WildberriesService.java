@@ -1,11 +1,10 @@
-package com.breez.service;
+package com.breez.service.marketplace;
 
 import com.breez.exception.ClientException;
 import com.breez.exception.ServerException;
-import com.breez.util.wildberries.WildberriesAllProductsUtil;
-import com.breez.util.wildberries.WildberriesSingleProductUtil;
-import com.breez.util.wildberries.WildberriesUtil;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.breez.util.marketplace.wildberries.WildberriesAllProductsUtil;
+import com.breez.util.marketplace.wildberries.WildberriesSingleProductUtil;
+import com.breez.util.marketplace.wildberries.WildberriesUtil;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -20,16 +19,21 @@ import java.util.List;
 import java.util.Map;
 
 import static com.breez.constants.Constants.*;
+import static com.breez.constants.Constants.COMMON_SORT_PRICE_DESC;
+import static com.breez.constants.Constants.COMMON_SORT_RATING;
+import static com.breez.constants.Constants.WILDBERRIES_SORT_POPULAR;
+import static com.breez.constants.Constants.WILDBERRIES_SORT_PRICE_ASC;
+import static com.breez.constants.Constants.WILDBERRIES_SORT_PRICE_DESC;
+import static com.breez.constants.Constants.WILDBERRIES_SORT_RATING;
 
 @Service
-public class WildberriesService implements HttpService {
+public class WildberriesService implements MarketplaceService {
 
 	private final HttpClient httpClient;
 	private final WildberriesUtil wildberriesUtil;
 	private final WildberriesSingleProductUtil wildberriesSingleProductUtil;
 	private final WildberriesAllProductsUtil wildberriesAllProductsUtil;
 
-	@Autowired
 	public WildberriesService(HttpClient httpClient,
 							  @Qualifier("wildberriesUtil") WildberriesUtil wildberriesUtil,
 							  @Qualifier("wildberriesSingleProductUtil") WildberriesSingleProductUtil wildberriesSingleProductUtil,
@@ -38,25 +42,6 @@ public class WildberriesService implements HttpService {
 		this.wildberriesUtil = wildberriesUtil;
 		this.wildberriesSingleProductUtil = wildberriesSingleProductUtil;
 		this.wildberriesAllProductsUtil = wildberriesAllProductsUtil;
-	}
-
-	@Override
-	public List<Map<String, Object>> makeRequest(Map<String, String> parameters) throws IOException, InterruptedException {
-		String url = WILDBERRIES_BASE_URL + "dest=-1257786&hide_dtype=13&lang=ru&page=" + parameters.get("page") +
-				"&query=" + parameters.get("title") + "&resultset=catalog&sort=" + parameters.get("sort") +
-				"&spp=30&suppressSpellcheck=false";
-		String responseBody = getResponseBody(url);
-		return wildberriesAllProductsUtil.getAllProductsFromResponse(responseBody);
-	}
-
-	@Override
-	public Map<String, Object> makeRequestProduct(long id) throws IOException, InterruptedException {
-		String url = getProductInfoLink(id);
-		String responseBody = getResponseBody(url);
-		Map<String, Object> data = wildberriesAllProductsUtil.getProductInfoFromResponse(id, responseBody);
-		String descriptionAndOptionsUrl = getDescriptionAndOptionsInfoLink(id);
-		String responseBodyDescriptionAndOptions = getResponseBody(descriptionAndOptionsUrl);
-		return wildberriesSingleProductUtil.getDescriptionAndOptionsFromResponse(responseBodyDescriptionAndOptions, data);
 	}
 
 	@Override
@@ -76,6 +61,29 @@ public class WildberriesService implements HttpService {
 		return parameters;
 	}
 
+	@Override
+	public List<Map<String, Object>> fetchProducts(Map<String, String> parameters) throws IOException, InterruptedException {
+		String url = WILDBERRIES_BASE_URL + "dest=-1257786&hide_dtype=13&lang=ru&page=" + parameters.get("page") +
+				"&query=" + parameters.get("title") + "&resultset=catalog&sort=" + parameters.get("sort") +
+				"&spp=30&suppressSpellcheck=false";
+		String responseBody = getResponseBody(url);
+		return wildberriesAllProductsUtil.getAllProductsFromResponse(responseBody);
+	}
+
+	public Map<String, Object> fetchSingleProduct(Long id) throws IOException, InterruptedException {
+		String url = getProductInfoLink(id);
+		String responseBody = getResponseBody(url);
+		Map<String, Object> data = wildberriesAllProductsUtil.getProductInfoFromResponse(id, responseBody);
+		String descriptionAndOptionsUrl = getDescriptionAndOptionsInfoLink(id);
+		String responseBodyDescriptionAndOptions = getResponseBody(descriptionAndOptionsUrl);
+		return wildberriesSingleProductUtil.getDescriptionAndOptionsFromResponse(responseBodyDescriptionAndOptions, data);
+	}
+
+	@Override
+	public String getMarketplaceIdentifier() {
+		return WILDBERRIES;
+	}
+
 	private String getResponseBody(String url) throws IOException, InterruptedException {
 		HttpRequest request = HttpRequest.newBuilder()
 				.uri(URI.create(url))
@@ -85,8 +93,8 @@ public class WildberriesService implements HttpService {
 				.header("priority", "u=1, i")
 				.header("sec-ch-ua", "Google Chrome;v=135, Not-A.Brand;v=8, Chromium;v=135")
 				.header("user-agent", "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36")
-				.header("x-captcha-id", WILDBERRIES_X_CAPTCHA_ID)
-				.header("x-queryid", WILDBERRIES_X_QUERY_ID)
+//				.header("x-captcha-id", WILDBERRIES_X_CAPTCHA_ID)
+//				.header("x-queryid", WILDBERRIES_X_QUERY_ID)
 				.GET()
 				.build();
 		HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
@@ -109,7 +117,6 @@ public class WildberriesService implements HttpService {
 		long vol = id / 100000;
 		long part = id / 1000;
 		String basketNum = wildberriesUtil.getBasketNum(vol);
-
 		return String.format("https://basket-%s.wbbasket.ru/vol%d/part%d/%d/info/ru/card.json", basketNum, vol, part, id);
 	}
 

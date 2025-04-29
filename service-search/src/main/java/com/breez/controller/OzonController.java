@@ -3,10 +3,11 @@ package com.breez.controller;
 import com.breez.exception.EmptyResponseException;
 import com.breez.exception.InvalidParametersException;
 import com.breez.exception.ServerException;
+import com.breez.model.ProductChunkResult;
 import com.breez.model.Response;
-import com.breez.service.CommonService;
-import com.breez.service.OzonService;
-import com.breez.service.ResponseService;
+import com.breez.service.*;
+import com.breez.service.marketplace.OzonService;
+import com.breez.service.ProductsFetchingService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -15,17 +16,16 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 
 import static com.breez.constants.Constants.*;
@@ -34,13 +34,17 @@ import static com.breez.constants.Constants.*;
 @RequestMapping("/api/v1")
 public class OzonController {
 
-	private final CommonService commonService;
+	private static final Logger logger = LoggerFactory.getLogger(OzonController.class);
+
 	private final OzonService ozonService;
+	private final ProductsFetchingService productsFetchingService;
+	private final ValidationService validationService;
 
 	@Autowired
-	public OzonController(CommonService commonService, OzonService ozonService) {
-		this.commonService = commonService;
+	public OzonController(OzonService ozonService, ProductsFetchingService productsFetchingService, ValidationService validationService) {
 		this.ozonService = ozonService;
+		this.productsFetchingService = productsFetchingService;
+		this.validationService = validationService;
 	}
 
 	@ApiResponses({
@@ -60,30 +64,33 @@ public class OzonController {
 	@Operation(summary = "Получение информации о товарах Ozon")
 	@GetMapping(value = "/ozon", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Response> makeRequest(
+			@Parameter(description = "Сессия пользователя")
+			@RequestHeader(value = "Session-Id", required = false) String sessionId,
+
 			@Parameter(description = "Название товара для поиска", required = true)
 			@RequestParam(value = "title", required = false) String title,
 
 			@Parameter(description = "Параметр для сортировки результатов поиска", schema = @Schema(allowableValues = {"popular", "new", "priceasc", "pricedesc", "rating"}, defaultValue = "popular"))
-			@RequestParam(value = "sort", required = false, defaultValue = COMMON_SORT_POPULAR) String sort,
+			@RequestParam(value = "sort", required = false, defaultValue = DEFAULT_SORT) String sort,
 
-			@Parameter(description = "Номер страницы поиска", schema = @Schema(defaultValue = "1"))
-			@RequestParam(value = "page", required = false, defaultValue = COMMON_PAGE) String page)
+			@Parameter(description = "Индекс запрашиваемой порции", required = true, schema = @Schema(defaultValue = "0"))
+			@RequestParam(value = "chunk") String chunk)
 	{
-		try {
-			commonService.validateInputParameters(OZON, title, sort, page);
+		validationService.validateHeaders(sessionId, logger);
+		validationService.validateInputParameters(title, sort, chunk, logger);
 
-			Map<String, String> parameters = ozonService.getSearchParameters(title, sort, page);
-			List<Map<String, Object>> response = ozonService.makeRequest(parameters);
-			if (response == null || response.isEmpty()) {
-				throw new EmptyResponseException(HttpStatus.NOT_FOUND, "Ozon: No products found");
-			}
-			return ResponseService.successResponse(Map.of("products", response));
-		} catch (IOException e) {
-			throw new ServerException(HttpStatus.BAD_GATEWAY, "Ozon: Failed to fetch data from source");
-		} catch (InterruptedException e) {
-			Thread.currentThread().interrupt();
-			throw new ServerException(HttpStatus.SERVICE_UNAVAILABLE, "Ozon: Interrupted while processing request");
+		int chunkIndex = Integer.parseInt(chunk);
+		ProductChunkResult result = productsFetchingService.getProductChunk(ozonService, sessionId, title, sort, chunkIndex);
+
+		if (result.getProducts().isEmpty()) {
+			return ResponseService.errorResponse(HttpStatus.NOT_FOUND, Map.of("message", "No products found"));
 		}
+
+		Map<String, Object> responseData = new HashMap<>();
+		responseData.put("products", result.getProducts());
+		responseData.put("hasMore", result.hasMore());
+		logger.info("Session [{}], Market [{}], Search [{}], Chunk [{}]: Returning {} products, hasMore: {}", sessionId, OZON, title, chunkIndex, result.getProducts().size(), result.hasMore());
+		return ResponseService.successResponse(responseData);
 	}
 
 	@ApiResponses({
@@ -109,7 +116,7 @@ public class OzonController {
 		long id;
 		try {
 			id = Long.parseLong(paramId);
-			Map<String, Object> info = ozonService.makeRequestProduct(id);
+			Map<String, Object> info = ozonService.fetchSingleProduct(id);
 			if (info == null || info.isEmpty()) {
 				throw new EmptyResponseException(HttpStatus.NOT_FOUND, String.format("Ozon: No info for product with id=%d found", id));
 			}

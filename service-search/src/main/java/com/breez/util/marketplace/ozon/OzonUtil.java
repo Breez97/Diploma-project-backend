@@ -1,4 +1,4 @@
-package com.breez.util.ozon;
+package com.breez.util.marketplace.ozon;
 
 import com.breez.util.CommonUtil;
 import org.apache.commons.lang3.StringUtils;

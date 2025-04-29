@@ -1,10 +1,10 @@
-package com.breez.service;
+package com.breez.service.marketplace;
 
 import com.breez.exception.ClientException;
 import com.breez.exception.DataParsingException;
 import com.breez.exception.ServerException;
-import com.breez.util.ozon.OzonAllProductsUtil;
-import com.breez.util.ozon.OzonSingleProductUtil;
+import com.breez.util.marketplace.ozon.OzonAllProductsUtil;
+import com.breez.util.marketplace.ozon.OzonSingleProductUtil;
 import org.brotli.dec.BrotliInputStream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -18,12 +18,21 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import static com.breez.constants.Constants.*;
+import static com.breez.constants.Constants.COMMON_SORT_PRICE_DESC;
+import static com.breez.constants.Constants.COMMON_SORT_RATING;
+import static com.breez.constants.Constants.OZON_SORT_POPULAR;
+import static com.breez.constants.Constants.OZON_SORT_PRICE_ASC;
+import static com.breez.constants.Constants.OZON_SORT_PRICE_DESC;
+import static com.breez.constants.Constants.OZON_SORT_RATING;
 
 @Service
-public class OzonService implements HttpService {
+public class OzonService implements MarketplaceService {
 
 	private final HttpClient httpClient;
 	private final OzonSingleProductUtil ozonSingleProductUtil;
@@ -34,25 +43,6 @@ public class OzonService implements HttpService {
 		this.httpClient = httpClient;
 		this.ozonSingleProductUtil = ozonSingleProductUtil;
 		this.ozonAllProductsUtil = ozonAllProductsUtil;
-	}
-
-	@Override
-	public List<Map<String, Object>> makeRequest(Map<String, String> parameters) throws IOException, InterruptedException {
-		String url = OZON_BASE_URL + "/searchSuggestions/search/?text=" + parameters.get("title") + "&from_global=true";
-		String responseBody = getResponseBody(url);
-		String category = ozonAllProductsUtil.extractFirstCategoryValue(responseBody);
-		String searchUrl = OZON_BASE_URL + category + "?category_was_predicted=" + (category != null)
-				+ "&deny_category_prediction=true&from_global=true&layout_page_index=2&page=" + parameters.get("page")
-				+ "&paginator_token=3618992&sorting="+ parameters.get("sort") + "&start_page_id=940e64c1968c1684bcf866c50f7c93b6&text=" + parameters.get("title");
-		String searchResponseBody = getSearchResponseBody(searchUrl);
-		return ozonAllProductsUtil.getAllProductsFromResponse(searchResponseBody);
-	}
-
-	@Override
-	public Map<String, Object> makeRequestProduct(long id) throws IOException, InterruptedException {
-		String url = OZON_BASE_URL + "/product/" + id;
-		String responseBody = getResponseBody(url);
-		return ozonSingleProductUtil.getSingleProductFromResponse(responseBody, id);
 	}
 
 	@Override
@@ -70,6 +60,29 @@ public class OzonService implements HttpService {
 		parameters.put("sort", resultSort);
 		parameters.put("page", page);
 		return parameters;
+	}
+
+	@Override
+	public List<Map<String, Object>> fetchProducts(Map<String, String> parameters) throws IOException, InterruptedException {
+		String url = OZON_BASE_URL + "/searchSuggestions/search/?text=" + parameters.get("title") + "&from_global=true";
+		String responseBody = getResponseBody(url);
+		String category = ozonAllProductsUtil.extractFirstCategoryValue(responseBody);
+		String searchUrl = OZON_BASE_URL + category + "?category_was_predicted=" + (category != null)
+				+ "&deny_category_prediction=true&from_global=true&layout_page_index=2&page=" + parameters.get("page")
+				+ "&paginator_token=3618992&sorting="+ parameters.get("sort") + "&start_page_id=940e64c1968c1684bcf866c50f7c93b6&text=" + parameters.get("title");
+		String searchResponseBody = getSearchResponseBody(searchUrl);
+		return ozonAllProductsUtil.getAllProductsFromResponse(searchResponseBody);
+	}
+
+	public Map<String, Object> fetchSingleProduct(Long id) throws IOException, InterruptedException {
+		String url = OZON_BASE_URL + "/product/" + id;
+		String responseBody = getResponseBody(url);
+		return ozonSingleProductUtil.getSingleProductFromResponse(responseBody, id);
+	}
+
+	@Override
+	public String getMarketplaceIdentifier() {
+		return OZON;
 	}
 
 	private String getResponseBody(String url) throws IOException, InterruptedException {
@@ -128,7 +141,7 @@ public class OzonService implements HttpService {
 			return "";
 		}
 		try (ByteArrayInputStream bis = new ByteArrayInputStream(compressed);
-			BrotliInputStream bris = new BrotliInputStream(bis)) {
+			 BrotliInputStream bris = new BrotliInputStream(bis)) {
 			return new String(bris.readAllBytes(), StandardCharsets.UTF_8);
 		}
 	}

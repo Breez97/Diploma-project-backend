@@ -1,4 +1,4 @@
-package com.breez.util.ozon;
+package com.breez.util.marketplace.ozon;
 
 import com.breez.exception.DataParsingException;
 import com.breez.mapper.ObjectMapperSingleton;

@@ -24,14 +24,11 @@ public class User implements UserDetails {
 	@SequenceGenerator(name = "user_id_seq", sequenceName = "user_id_seq", allocationSize = 1)
 	private Long id;
 
-	@Column(name = "username", unique = true, nullable = false)
-	private String username;
+	@Column(name = "email", unique = true, nullable = false)
+	private String email;
 
 	@Column(name = "password", nullable = false)
 	private String password;
-
-	@Column(name = "email", unique = true, nullable = false)
-	private String email;
 
 	@Enumerated(EnumType.STRING)
 	@Column(name = "role", nullable = false)
@@ -44,7 +41,7 @@ public class User implements UserDetails {
 
 	@Override
 	public String getUsername() {
-		return username;
+		return null;
 	}
 
 	@Override

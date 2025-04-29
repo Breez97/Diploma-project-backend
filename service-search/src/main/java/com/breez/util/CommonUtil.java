@@ -18,6 +18,7 @@ public class CommonUtil extends Util {
 		emptyData.put("price", null);
 		emptyData.put("rating", null);
 		emptyData.put("feedbacks", null);
+		emptyData.put("marketplace", null);
 		return emptyData;
 	}
 

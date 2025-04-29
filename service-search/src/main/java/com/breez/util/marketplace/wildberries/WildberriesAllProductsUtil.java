@@ -1,4 +1,4 @@
-package com.breez.util.wildberries;
+package com.breez.util.marketplace.wildberries;
 
 import com.breez.exception.DataParsingException;
 import com.breez.mapper.ObjectMapperSingleton;
@@ -12,6 +12,8 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.*;
+
+import static com.breez.constants.Constants.WILDBERRIES;
 
 @Component
 public class WildberriesAllProductsUtil extends WildberriesUtil {
@@ -79,7 +81,7 @@ public class WildberriesAllProductsUtil extends WildberriesUtil {
 	}
 
 	private Map<String, Object> extractProductInfoFromNode(long id, JsonNode currentProductNode) {
-		Map<String, Object> data = getEmptyData(id);
+		Map<String, Object> productData = getEmptyData(id);
 		String externalLink = getExternalLinkWildberries(id);
 		String title = extractTitle(currentProductNode);
 		String imageUrl = getImageUrl(id);
@@ -87,15 +89,16 @@ public class WildberriesAllProductsUtil extends WildberriesUtil {
 		String price = extractPrice(currentProductNode);
 		String rating = extractRating(currentProductNode);
 		String feedbacks = extractFeedbacks(currentProductNode);
-		data.put("id", id);
-		data.put("externalLink", stringOrNull(externalLink));
-		data.put("title", stringOrNull(title));
-		data.put("imageUrl", stringOrNull(imageUrl));
-		data.put("brand", stringOrNull(brand));
-		data.put("price", stringOrNull(price));
-		data.put("rating", stringOrNull(rating));
-		data.put("feedbacks", stringOrNull(feedbacks));
-		return data;
+		productData.put("id", id);
+		productData.put("externalLink", stringOrNull(externalLink));
+		productData.put("title", stringOrNull(title));
+		productData.put("imageUrl", stringOrNull(imageUrl));
+		productData.put("brand", stringOrNull(brand));
+		productData.put("price", stringOrNull(price));
+		productData.put("rating", stringOrNull(rating));
+		productData.put("feedbacks", stringOrNull(feedbacks));
+		productData.put("marketplace", WILDBERRIES);
+		return productData;
 	}
 
 	private String extractTitle(JsonNode currentProductNode) {

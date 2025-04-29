@@ -1,4 +1,4 @@
-package com.breez.util.ozon;
+package com.breez.util.marketplace.ozon;
 
 import com.breez.exception.DataParsingException;
 import com.breez.mapper.ObjectMapperSingleton;
@@ -11,6 +11,8 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.*;
+
+import static com.breez.constants.Constants.OZON;
 
 @Component
 public class OzonAllProductsUtil extends OzonUtil {
@@ -82,6 +84,7 @@ public class OzonAllProductsUtil extends OzonUtil {
 		productData.put("price", stringOrNull(price));
 		productData.put("rating", stringOrNull(rating));
 		productData.put("feedbacks", stringOrNull(feedbacks));
+		productData.put("marketplace", OZON);
 		return productData;
 	}
 

@@ -1,4 +1,4 @@
-package com.breez.util.wildberries;
+package com.breez.util.marketplace.wildberries;
 
 import com.breez.util.CommonUtil;
 import org.springframework.stereotype.Component;

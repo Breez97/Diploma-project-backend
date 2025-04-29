@@ -15,10 +15,12 @@ public class Constants {
 
 	public static final String COMMON_SORT_RATING = "rating";
 
-	public static final Set<String> SET_AVAILABLE_SORT = Set.of(COMMON_SORT_POPULAR, COMMON_SORT_NEW, COMMON_SORT_PRICE_ASC,
-			COMMON_SORT_PRICE_DESC, COMMON_SORT_RATING);
-
 	public static final String COMMON_PAGE = "1";
+
+	// Default values
+	public static final String DEFAULT_SORT = COMMON_SORT_POPULAR;
+
+	public static final String DEFAULT_PAGE = COMMON_PAGE;
 
 	// Wildberries
 	public static final String WILDBERRIES = "wildberries";
@@ -37,7 +39,7 @@ public class Constants {
 	public static final String WILDBERRIES_SORT_POPULAR = "popular";
 	// По новинкам
 	public static final String WILDBERRIES_SORT_NEW = "newly";
-	// По пвозрастанию цены
+	// По возрастанию цены
 	public static final String WILDBERRIES_SORT_PRICE_ASC = "priceup";
 	// По убыванию цены
 	public static final String WILDBERRIES_SORT_PRICE_DESC = "pricedown";
@@ -63,5 +65,12 @@ public class Constants {
 	public static final String OZON_SORT_PRICE_DESC = "price_desc";
 	// С высоким рейтингом
 	public static final String OZON_SORT_RATING = "rating";
+
+	// Параметры для валидации
+
+	public static final Set<String> SET_ALLOWED_MARKETPLACES = Set.of(WILDBERRIES, OZON);
+
+	public static final Set<String> SET_ALLOWED_SORT = Set.of(COMMON_SORT_POPULAR, COMMON_SORT_NEW, COMMON_SORT_PRICE_ASC,
+			COMMON_SORT_PRICE_DESC, COMMON_SORT_RATING);
 
 }

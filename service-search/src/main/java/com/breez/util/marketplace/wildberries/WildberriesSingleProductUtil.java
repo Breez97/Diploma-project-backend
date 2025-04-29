@@ -1,4 +1,4 @@
-package com.breez.util.wildberries;
+package com.breez.util.marketplace.wildberries;
 
 import com.breez.exception.DataParsingException;
 import com.breez.mapper.ObjectMapperSingleton;

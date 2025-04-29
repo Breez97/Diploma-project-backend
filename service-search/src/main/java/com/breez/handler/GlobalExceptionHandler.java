@@ -16,6 +16,7 @@ public class GlobalExceptionHandler {
 			ClientException.class,
 			DataParsingException.class,
 			EmptyResponseException.class,
+			InvalidHeadersException.class,
 			InvalidParametersException.class,
 			ServerException.class
 	})
