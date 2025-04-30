@@ -29,11 +29,31 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=docker
       - SERVICE_SEARCH_PORT=${SERVICE_SEARCH_PORT}
+      - SPRING_DATA_REDIS_HOST=redis
+      - SPRING_DATA_REDIS_PORT=${SPRING_REDIS_PORT}
+      - SPRING_DATA_REDIS_TIMEOUT=${SPRING_REDIS_TIMEOUT}
     env_file:
       - ./.env
     networks:
       - docker-network
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:7.4-alpine
+    container_name: redis-container
+    restart: always
+    ports:
+      - "${REDIS_HOST_PORT:-6379}:6379"
+    networks:
+      - docker-network
+    volumes:
+      - redis-data:/data
 
 networks:
   docker-network:
     driver: bridge
+
+volumes:
+  redis-data:
+    driver: local
