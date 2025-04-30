@@ -11,10 +11,10 @@
 
 	<modules>
 		<module>api-gateway</module>
-		<module>service-vaadin</module>
-		<module>service-search</module>
-		<!--        <module>service-users</module>-->
 		<module>common-library</module>
+		<module>service-search</module>
+		<module>service-users</module>
+		<module>service-vaadin</module>
 	</modules>
 
 	<properties>
