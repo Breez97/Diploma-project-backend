@@ -1,5 +1,7 @@
 package com.breez.util.marketplace.ozon;
 
+import com.breez.dto.ProductDetailsDto;
+import com.breez.dto.ProductOptionDto;
 import com.breez.exception.DataParsingException;
 import com.breez.mapper.ObjectMapperSingleton;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -17,7 +19,7 @@ public class OzonSingleProductUtil extends OzonUtil {
 
 	private static final Logger logger = LoggerFactory.getLogger(OzonSingleProductUtil.class);
 
-	public Map<String, Object> getSingleProductFromResponse(String response, long id) {
+	public ProductDetailsDto getSingleProductFromResponse(String response, long id) {
 		if (StringUtils.isBlank(response)) {
 			return null;
 		}
@@ -31,7 +33,7 @@ public class OzonSingleProductUtil extends OzonUtil {
 		}
 	}
 
-	private Optional<Map<String, Object>> getProductInfo(JsonNode rootNode, long id) {
+	private Optional<ProductDetailsDto> getProductInfo(JsonNode rootNode, long id) {
 		return extractInnerHtmlNode(rootNode)
 				.flatMap(this::parseInnerHtmlNode)
 				.map(innerHtmlNode -> extractProductInfo(innerHtmlNode, rootNode, id));
@@ -53,8 +55,7 @@ public class OzonSingleProductUtil extends OzonUtil {
 		}
 	}
 
-	private Map<String, Object> extractProductInfo(JsonNode innerHtmlNode, JsonNode rootNode, long id) {
-		Map<String, Object> productData = getEmptyData(id);
+	private ProductDetailsDto extractProductInfo(JsonNode innerHtmlNode, JsonNode rootNode, long id) {
 		String externalLink = getExternalLinkOzon(id);
 		String title = extractTitle(innerHtmlNode);
 		String imageUrl = extractImageUrl(rootNode);
@@ -63,18 +64,19 @@ public class OzonSingleProductUtil extends OzonUtil {
 		String rating = extractRating(innerHtmlNode);
 		String feedbacks = extractFeedbacks(innerHtmlNode);
 		String description = extractDescription(innerHtmlNode);
-		List<Object> options = extractOptions(rootNode);
-		productData.put("id", id);
-		productData.put("externalLink", stringOrNull(externalLink));
-		productData.put("title", stringOrNull(title));
-		productData.put("imageUrl", stringOrNull(imageUrl));
-		productData.put("brand", stringOrNull(brand));
-		productData.put("price", stringOrNull(price));
-		productData.put("rating", stringOrNull(rating));
-		productData.put("feedbacks", stringOrNull(feedbacks));
-		productData.put("description", stringOrNull(description));
-		productData.put("options", listOrNull(options));
-		return productData;
+		List<ProductOptionDto> options = extractOptions(rootNode);
+		return ProductDetailsDto.builder()
+				.id(id)
+				.externalLink(stringOrNull(externalLink))
+				.title(stringOrNull(title))
+				.imageUrl(stringOrNull(imageUrl))
+				.brand(stringOrNull(brand))
+				.price(stringOrNull(price))
+				.rating(stringOrNull(rating))
+				.feedbacks(stringOrNull(feedbacks))
+				.description(stringOrNull(description))
+				.options(listOrNull(options))
+				.build();
 	}
 
 	private String extractTitle(JsonNode innerHtmlNode) {
@@ -176,8 +178,8 @@ public class OzonSingleProductUtil extends OzonUtil {
 				.orElse(null);
 	}
 
-	private List<Object> extractOptions(JsonNode rootNode) {
-		List<Object> optionsList = new LinkedList<>();
+	private List<ProductOptionDto> extractOptions(JsonNode rootNode) {
+		List<ProductOptionDto> optionsList = new LinkedList<>();
 		try {
 			Optional<String> webCharacteristics = Optional.ofNullable(rootNode)
 					.map(widgetStates -> widgetStates.path("widgetStates"))
@@ -190,12 +192,11 @@ public class OzonSingleProductUtil extends OzonUtil {
 						.filter(JsonNode::isArray);
 				if (characteristicsNode.isPresent()) {
 					for (JsonNode characteristicNode : characteristicsNode.get()) {
-						Map<String, Object> infoMap = new LinkedHashMap<>();
 						String name = characteristicNode.path("title").path("textRs").get(0).path("content").asText();
 						String value = characteristicNode.path("values").get(0).path("text").asText();
-						infoMap.put("name", name);
-						infoMap.put("value", value);
-						optionsList.add(infoMap);
+						if (StringUtils.isNotBlank(name) && StringUtils.isNotBlank(value)) {
+							optionsList.add(ProductOptionDto.builder().name(name).value(value).build());
+						}
 					}
 				}
 			}

@@ -25,12 +25,12 @@ start_service() {
 }
 
 start_service api-gateway
-start_service service-vaadin
+#start_service service-vaadin
 start_service service-search
 
 declare -A services=(
   ["api-gateway"]=$API_GATEWAY_PORT
-  ["service-vaadin"]=$SERVICE_VAADIN_PORT
+#  ["service-vaadin"]=$SERVICE_VAADIN_PORT
   ["service-search"]=$SERVICE_SEARCH_PORT
 )
 

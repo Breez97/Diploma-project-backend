@@ -1,5 +1,6 @@
 package com.breez.util.marketplace.ozon;
 
+import com.breez.dto.ProductDto;
 import com.breez.exception.DataParsingException;
 import com.breez.mapper.ObjectMapperSingleton;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -21,7 +22,7 @@ public class OzonAllProductsUtil extends OzonUtil {
 
 	private static final String REGEX_TAGS = "<[^>]*>";
 
-	public List<Map<String, Object>> getAllProductsFromResponse (String response) {
+	public List<ProductDto> getAllProductsFromResponse (String response) {
 		if (StringUtils.isBlank(response)) {
 			return null;
 		}
@@ -52,8 +53,8 @@ public class OzonAllProductsUtil extends OzonUtil {
 				.orElse(null);
 	}
 
-	private List<Map<String, Object>> convertProductsNodeToList(JsonNode productsNode) {
-		List<Map<String, Object>> productsList = new LinkedList<>();
+	private List<ProductDto> convertProductsNodeToList(JsonNode productsNode) {
+		List<ProductDto> productsList = new LinkedList<>();
 		for (JsonNode productNode : productsNode) {
 			Optional.ofNullable(productNode)
 					.map(topRightButtonsNode -> topRightButtonsNode.path("topRightButtons"))
@@ -66,9 +67,8 @@ public class OzonAllProductsUtil extends OzonUtil {
 		return productsList;
 	}
 
-	private Map<String, Object> extractProduct(JsonNode productNode, JsonNode idNode) {
+	private ProductDto extractProduct(JsonNode productNode, JsonNode idNode) {
 		long id = idNode.asLong();
-		Map<String, Object> productData = getEmptyData(id);
 		String externalLink = getExternalLinkOzon(id);
 		String title = extractTitle(productNode);
 		String imageUrl = extractImageUrl(productNode);
@@ -76,16 +76,17 @@ public class OzonAllProductsUtil extends OzonUtil {
 		String price = extractPrice(productNode);
 		String rating = extractRating(productNode);
 		String feedbacks = extractFeedbacks(productNode);
-		productData.put("id", id);
-		productData.put("externalLink", stringOrNull(externalLink));
-		productData.put("title", stringOrNull(title));
-		productData.put("imageUrl", stringOrNull(imageUrl));
-		productData.put("brand", stringOrNull(brand));
-		productData.put("price", stringOrNull(price));
-		productData.put("rating", stringOrNull(rating));
-		productData.put("feedbacks", stringOrNull(feedbacks));
-		productData.put("marketplace", OZON);
-		return productData;
+		return ProductDto.builder()
+				.id(id)
+				.externalLink(stringOrNull(externalLink))
+				.title(stringOrNull(title))
+				.imageUrl(stringOrNull(imageUrl))
+				.brand(stringOrNull(brand))
+				.price(stringOrNull(price))
+				.rating(stringOrNull(rating))
+				.feedbacks(stringOrNull(feedbacks))
+				.marketplace(OZON)
+				.build();
 	}
 
 	private String extractTitle(JsonNode productNode) {

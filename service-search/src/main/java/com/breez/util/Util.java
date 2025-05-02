@@ -1,5 +1,6 @@
 package com.breez.util;
 
+import com.breez.dto.ProductOptionDto;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
@@ -20,7 +21,7 @@ public abstract class Util {
 		return str;
 	}
 
-	protected List<Object> listOrNull(List<Object> list) {
+	protected List<ProductOptionDto> listOrNull(List<ProductOptionDto> list) {
 		if (list == null || list.isEmpty()) {
 			return null;
 		}

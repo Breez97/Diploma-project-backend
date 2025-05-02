@@ -1,5 +1,7 @@
 package com.breez.service;
 
+import com.breez.dto.ProductDto;
+import com.breez.exception.NoProductsFoundException;
 import com.breez.exception.ServerException;
 import com.breez.model.MarketplaceState;
 import com.breez.model.ProductChunkResult;
@@ -7,7 +9,6 @@ import com.breez.service.marketplace.MarketplaceService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 
@@ -49,7 +50,7 @@ public class CombinedProductFetchingService {
 			states.put(client.getMarketplaceIdentifier(), new MarketplaceState(client));
 		}
 
-		List<Map<String, Object>> combinedProductsResult = new ArrayList<>(COMBINED_CHUNK_SIZE);
+		List<ProductDto> combinedProductsResult = new ArrayList<>(COMBINED_CHUNK_SIZE);
 		boolean needMoreFetching = true;
 
 		try {
@@ -107,13 +108,16 @@ public class CombinedProductFetchingService {
 			boolean hasMore = elementExistsAfterEnd;
 			logger.info("Session [{}], Search [{}], Marketplaces {}, Chunk [{}]: Final combined result: {} products, hasMore: {}. Total cache size for selection: {}",
 					sessionId, searchHash, selectedIds, chunkIndex, combinedProductsResult.size(), hasMore, totalFinalCacheSize);
+			if (combinedProductsResult.isEmpty()) {
+				throw new NoProductsFoundException("No products found");
+			}
 			return new ProductChunkResult(combinedProductsResult, hasMore);
 		} catch (Exception e) {
-			throw new ServerException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error during product fetching");
+			throw new ServerException("Internal server error during product fetching");
 		}
 	}
 
-	private void fillResultFromCache(List<Map<String, Object>> combinedProductsResult,
+	private void fillResultFromCache(List<ProductDto> combinedProductsResult,
 									 long globalStartIndex, long globalEndIndex,
 									 Map<String, MarketplaceState> states,
 									 String searchHash, String sessionId,
@@ -139,9 +143,8 @@ public class CombinedProductFetchingService {
 
 			if (state.getCacheSize() > localIndex) {
 				List<Object> itemResult = redisService.getListRange(productsKey, localIndex, localIndex);
-				if (itemResult != null && !itemResult.isEmpty() && itemResult.get(0) instanceof Map) {
-					Map<String, Object> productMap = (Map<String, Object>) itemResult.get(0);
-					combinedProductsResult.add(productMap);
+				if (itemResult != null && !itemResult.isEmpty() && itemResult.get(0) instanceof ProductDto) {
+					combinedProductsResult.add((ProductDto) itemResult.get(0));
 				}
 			}
 		}
@@ -190,7 +193,7 @@ public class CombinedProductFetchingService {
 
 		try {
 			Map<String, String> parameters = client.getSearchParameters(title, sort, String.valueOf(pageToFetch));
-			List<Map<String, Object>> productsFromSource = client.fetchProducts(parameters);
+			List<ProductDto> productsFromSource = client.fetchProducts(parameters);
 
 			if (productsFromSource == null || productsFromSource.isEmpty()) {
 				logger.info("Session [{}], Search [{}]: Source ({}) returned no products for page {}.", sessionId, searchHash, marketplaceId, pageToFetch);

@@ -1,12 +1,13 @@
 package com.breez.service;
 
+import com.breez.dto.ProductDto;
+import com.breez.exception.NoProductsFoundException;
 import com.breez.exception.ServerException;
 import com.breez.model.ProductChunkResult;
 import com.breez.service.marketplace.MarketplaceService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 
@@ -59,7 +60,7 @@ public class ProductsFetchingService {
 				int pageToFetch;
 				pageToFetch = Objects.requireNonNullElse(nextPageMarker, 1);
 				Map<String, String> parameters = marketplaceService.getSearchParameters(title, sort, String.valueOf(pageToFetch));
-				List<Map<String, Object>> productsFromSource = marketplaceService.fetchProducts(parameters);
+				List<ProductDto> productsFromSource = marketplaceService.fetchProducts(parameters);
 				if (productsFromSource == null || productsFromSource.isEmpty()) {
 					logger.info("Session [{}], Market [{}], Search [{}], Chunk [{}]: Source ({}) returned no products for page {}. Marking as exhausted.",
 							sessionId, marketplaceId, searchHash, chunkIndex, marketplaceId, pageToFetch);
@@ -82,9 +83,9 @@ public class ProductsFetchingService {
 				finalProductsChunk = Collections.emptyList();
 			}
 
-			List<Map<String, Object>> resultProducts = finalProductsChunk.stream()
+			List<ProductDto> resultProducts = finalProductsChunk.stream()
 					.filter(Objects::nonNull)
-					.map(obj -> (Map<String, Object>) obj)
+					.map(obj -> (ProductDto) obj)
 					.collect(Collectors.toList());
 
 			Long finalCacheSize = redisService.getListSize(productsKey);
@@ -93,14 +94,15 @@ public class ProductsFetchingService {
 			boolean isFinalSourceExhausted = (finalNextPage != null && finalNextPage == -1);
 			boolean hasMore = !isFinalSourceExhausted || (finalCacheSize > endIndex + 1);
 			logger.info("Session [{}], Market [{}], Search [{}], Chunk [{}]: Final result: {} products, hasMore: {}. Final Cache Size: {}, Final Next Page: {}", sessionId, marketplaceId, searchHash, chunkIndex, resultProducts.size(), hasMore, finalCacheSize, finalNextPage);
+			if (resultProducts.isEmpty()) {
+				throw new NoProductsFoundException(marketplaceService.getMarketplaceIdentifier() + ": no products found");
+			}
 			return new ProductChunkResult(resultProducts, hasMore);
 		} catch (IOException e) {
-			throw new ServerException(HttpStatus.BAD_GATEWAY, marketplaceId + ": Failed to fetch data from source");
+			throw new ServerException(marketplaceId + ": Failed to fetch data from source");
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
-			throw new ServerException(HttpStatus.SERVICE_UNAVAILABLE, marketplaceId + ": Interrupted while processing request");
-		} catch (Exception e) {
-			throw new ServerException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error during product fetching");
+			throw new ServerException(marketplaceId + ": Interrupted while processing request");
 		}
 	}
 

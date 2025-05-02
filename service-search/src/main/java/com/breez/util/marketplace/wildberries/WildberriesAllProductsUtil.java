@@ -1,5 +1,7 @@
 package com.breez.util.marketplace.wildberries;
 
+import com.breez.dto.ProductDto;
+import com.breez.dto.response.ProductsSearchResponse;
 import com.breez.exception.DataParsingException;
 import com.breez.mapper.ObjectMapperSingleton;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -20,7 +22,7 @@ public class WildberriesAllProductsUtil extends WildberriesUtil {
 
 	private static final Logger logger = LoggerFactory.getLogger(WildberriesAllProductsUtil.class);
 
-	public List<Map<String, Object>> getAllProductsFromResponse(String responseBody) {
+	public List<ProductDto> getAllProductsFromResponse(String responseBody) {
 		if (StringUtils.isBlank(responseBody)) {
 			return null;
 		}
@@ -34,13 +36,14 @@ public class WildberriesAllProductsUtil extends WildberriesUtil {
 		}
 	}
 
-	private List<Map<String, Object>> extractProducts(JsonNode rootNode) {
+	private List<ProductDto> extractProducts(JsonNode rootNode) {
 		Optional<JsonNode> resultProductsNode = Optional.ofNullable(rootNode)
 				.map(dataNode -> dataNode.path("data"))
 				.map(productsNode -> productsNode.path("products"))
 				.filter(JsonNode::isArray);
 		if (resultProductsNode.isPresent()) {
-			List<Map<String, Object>> productsList = new LinkedList<>();
+			List<ProductDto> products = new LinkedList<>();
+//			List<Map<String, Object>> productsList = new LinkedList<>();
 			for (JsonNode productNode : resultProductsNode.get()) {
 				Optional<Long> resultIdNode = Optional.ofNullable(productNode)
 						.map(idNode -> idNode.path("id"))
@@ -48,15 +51,15 @@ public class WildberriesAllProductsUtil extends WildberriesUtil {
 				if (resultIdNode.isPresent()) {
 					Optional.of(resultIdNode)
 							.map(currentProductNode -> extractProductInfoFromNode(resultIdNode.get(), productNode))
-							.ifPresent(productsList::add);
+							.ifPresent(products::add);
 				}
 			}
-			return productsList;
+			return products;
 		}
 		return null;
 	}
 
-	public Map<String, Object> getProductInfoFromResponse(long id, String responseBody) {
+	public ProductDto getProductInfoFromResponse(long id, String responseBody) {
 		if (StringUtils.isBlank(responseBody)) {
 			return null;
 		}
@@ -70,7 +73,7 @@ public class WildberriesAllProductsUtil extends WildberriesUtil {
 		}
 	}
 
-	private Map<String, Object> extractProductInfo(long id, JsonNode rootNode) {
+	private ProductDto extractProductInfo(long id, JsonNode rootNode) {
 		return Optional.ofNullable(rootNode)
 				.map(dataNode -> dataNode.path("data"))
 				.map(productNode -> productNode.path("products"))
@@ -80,8 +83,7 @@ public class WildberriesAllProductsUtil extends WildberriesUtil {
 				.orElse(null);
 	}
 
-	private Map<String, Object> extractProductInfoFromNode(long id, JsonNode currentProductNode) {
-		Map<String, Object> productData = getEmptyData(id);
+	private ProductDto extractProductInfoFromNode(long id, JsonNode currentProductNode) {
 		String externalLink = getExternalLinkWildberries(id);
 		String title = extractTitle(currentProductNode);
 		String imageUrl = getImageUrl(id);
@@ -89,16 +91,17 @@ public class WildberriesAllProductsUtil extends WildberriesUtil {
 		String price = extractPrice(currentProductNode);
 		String rating = extractRating(currentProductNode);
 		String feedbacks = extractFeedbacks(currentProductNode);
-		productData.put("id", id);
-		productData.put("externalLink", stringOrNull(externalLink));
-		productData.put("title", stringOrNull(title));
-		productData.put("imageUrl", stringOrNull(imageUrl));
-		productData.put("brand", stringOrNull(brand));
-		productData.put("price", stringOrNull(price));
-		productData.put("rating", stringOrNull(rating));
-		productData.put("feedbacks", stringOrNull(feedbacks));
-		productData.put("marketplace", WILDBERRIES);
-		return productData;
+		return ProductDto.builder()
+				.id(id)
+				.externalLink(stringOrNull(externalLink))
+				.title(stringOrNull(title))
+				.imageUrl(stringOrNull(imageUrl))
+				.brand(stringOrNull(brand))
+				.price(stringOrNull(price))
+				.rating(stringOrNull(rating))
+				.feedbacks(stringOrNull(feedbacks))
+				.marketplace(WILDBERRIES)
+				.build();
 	}
 
 	private String extractTitle(JsonNode currentProductNode) {

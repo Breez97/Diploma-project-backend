@@ -1,6 +1,6 @@
 package com.breez.controller;
 
-import com.breez.dto.GenericResponse;
+import com.breez.dto.Response;
 import com.breez.dto.request.AddFavoriteRequest;
 import com.breez.dto.response.FavoriteItemResponse;
 import com.breez.exception.favorite.FavoriteAlreadyExistsException;
@@ -26,39 +26,39 @@ public class FavoriteController {
 
 	@GetMapping
 	@PreAuthorize("isAuthenticated()")
-	public ResponseEntity<GenericResponse<List<FavoriteItemResponse>>> getUserFavorites(@AuthenticationPrincipal CustomUserDetails userDetails) {
+	public ResponseEntity<Response<List<FavoriteItemResponse>>> getUserFavorites(@AuthenticationPrincipal CustomUserDetails userDetails) {
 		List<FavoriteItemResponse> favorites = favoriteService.getFavorites(userDetails.getId());
-		return ResponseEntity.ok(GenericResponse.success(favorites, "Favorites retrieved successfully"));
+		return ResponseEntity.ok(Response.success(favorites, "Favorites retrieved successfully"));
 	}
 
 	@PostMapping("/add")
 	@PreAuthorize("isAuthenticated()")
-	public ResponseEntity<GenericResponse<FavoriteItemResponse>> addFavorite(
+	public ResponseEntity<Response<FavoriteItemResponse>> addFavorite(
 			@AuthenticationPrincipal CustomUserDetails userDetails,
 			@Valid @RequestBody AddFavoriteRequest request) {
 		try {
 			FavoriteItemResponse addedFavorite = favoriteService.addFavorite(userDetails.getId(), request);
-			return ResponseEntity.status(HttpStatus.CREATED).body(GenericResponse.success(addedFavorite, "Item added successfully"));
+			return ResponseEntity.status(HttpStatus.CREATED).body(Response.success(addedFavorite, "Item added successfully"));
 		} catch (FavoriteAlreadyExistsException e) {
 			return ResponseEntity.status(HttpStatus.CONFLICT)
-					.body(GenericResponse.error(e.getMessage()));
+					.body(Response.error(e.getMessage()));
 		} catch (ResourceNotFoundException e) {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND)
-					.body(GenericResponse.error(e.getMessage()));
+					.body(Response.error(e.getMessage()));
 		}
 	}
 
 	@GetMapping("/delete/{itemId}")
 	@PreAuthorize("isAuthenticated()")
-	public ResponseEntity<GenericResponse<Void>> removeFavorite(
+	public ResponseEntity<Response<Void>> removeFavorite(
 			@AuthenticationPrincipal CustomUserDetails userDetails,
 			@PathVariable Long itemId) {
 		try {
 			favoriteService.removeFavorite(userDetails.getId(), itemId);
-			return ResponseEntity.ok(GenericResponse.success("Item removed successfully"));
+			return ResponseEntity.ok(Response.success("Item removed successfully"));
 		} catch (ResourceNotFoundException e) {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND)
-					.body(GenericResponse.error(e.getMessage()));
+					.body(Response.error(e.getMessage()));
 		}
 	}
 

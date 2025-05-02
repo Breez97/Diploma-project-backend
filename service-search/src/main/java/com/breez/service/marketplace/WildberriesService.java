@@ -1,5 +1,8 @@
 package com.breez.service.marketplace;
 
+import com.breez.dto.ProductDetailsDto;
+import com.breez.dto.ProductDto;
+import com.breez.dto.response.ProductsSearchResponse;
 import com.breez.exception.ClientException;
 import com.breez.exception.ServerException;
 import com.breez.util.marketplace.wildberries.WildberriesAllProductsUtil;
@@ -62,7 +65,7 @@ public class WildberriesService implements MarketplaceService {
 	}
 
 	@Override
-	public List<Map<String, Object>> fetchProducts(Map<String, String> parameters) throws IOException, InterruptedException {
+	public List<ProductDto> fetchProducts(Map<String, String> parameters) throws IOException, InterruptedException {
 		String url = WILDBERRIES_BASE_URL + "dest=-1257786&hide_dtype=13&lang=ru&page=" + parameters.get("page") +
 				"&query=" + parameters.get("title") + "&resultset=catalog&sort=" + parameters.get("sort") +
 				"&spp=30&suppressSpellcheck=false";
@@ -70,13 +73,20 @@ public class WildberriesService implements MarketplaceService {
 		return wildberriesAllProductsUtil.getAllProductsFromResponse(responseBody);
 	}
 
-	public Map<String, Object> fetchSingleProduct(Long id) throws IOException, InterruptedException {
+	public ProductDetailsDto fetchSingleProduct(Long id) {
 		String url = getProductInfoLink(id);
-		String responseBody = getResponseBody(url);
-		Map<String, Object> data = wildberriesAllProductsUtil.getProductInfoFromResponse(id, responseBody);
-		String descriptionAndOptionsUrl = getDescriptionAndOptionsInfoLink(id);
-		String responseBodyDescriptionAndOptions = getResponseBody(descriptionAndOptionsUrl);
-		return wildberriesSingleProductUtil.getDescriptionAndOptionsFromResponse(responseBodyDescriptionAndOptions, data);
+		try {
+			String responseBody = getResponseBody(url);
+			ProductDto product = wildberriesAllProductsUtil.getProductInfoFromResponse(id, responseBody);
+			String descriptionAndOptionsUrl = getDescriptionAndOptionsInfoLink(id);
+			String responseBodyDescriptionAndOptions = getResponseBody(descriptionAndOptionsUrl);
+			return wildberriesSingleProductUtil.getDescriptionAndOptionsFromResponse(responseBodyDescriptionAndOptions, product);
+		} catch (IOException e) {
+			throw new ServerException("Wildberries: Failed to fetch data from source");
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+			throw new ServerException("Wildberries: Interrupted while processing request");
+		}
 	}
 
 	@Override
@@ -104,7 +114,7 @@ public class WildberriesService implements MarketplaceService {
 		} else if (statusCode >= 400 && statusCode <= 499) {
 			throw new ClientException(HttpStatus.valueOf(statusCode), "Wildberries: Client error");
 		} else if (statusCode >= 500 && statusCode <= 599) {
-			throw new ServerException(HttpStatus.valueOf(statusCode), "Wildberries: Server error");
+			throw new ServerException("Wildberries: Server error");
 		}
 		return null;
 	}

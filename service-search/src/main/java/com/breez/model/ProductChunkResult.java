@@ -1,19 +1,21 @@
 package com.breez.model;
 
+import com.breez.dto.ProductDto;
+
 import java.util.List;
 import java.util.Map;
 
 public class ProductChunkResult {
 
-	private final List<Map<String, Object>> products;
+	private final List<ProductDto> products;
 	private final boolean hasMore;
 
-	public ProductChunkResult(List<Map<String, Object>> products, boolean hasMore) {
+	public ProductChunkResult(List<ProductDto> products, boolean hasMore) {
 		this.products = products;
 		this.hasMore = hasMore;
 	}
 
-	public List<Map<String, Object>> getProducts() {
+	public List<ProductDto> getProducts() {
 		return products;
 	}
 

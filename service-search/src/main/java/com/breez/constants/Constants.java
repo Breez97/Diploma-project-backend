@@ -22,6 +22,10 @@ public class Constants {
 
 	public static final String DEFAULT_PAGE = COMMON_PAGE;
 
+	public static final Integer DEFAULT_CHUNK = 1;
+
+	public static final String DEFAULT_MARKETPLACES = "wildberries,ozon";
+
 	// Wildberries
 	public static final String WILDBERRIES = "wildberries";
 

@@ -1,7 +1,6 @@
 package com.breez.controller;
 
-import com.breez.model.Response;
-import com.breez.service.ResponseService;
+import com.breez.dto.Response;
 import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.boot.autoconfigure.web.servlet.error.AbstractErrorController;
@@ -26,10 +25,11 @@ public class CustomErrorController extends AbstractErrorController {
 
 	@RequestMapping
 	@ResponseBody
-	public ResponseEntity<Response> handleError(HttpServletRequest request) {
+	public ResponseEntity<Response<Void>> handleError(HttpServletRequest request) {
 		Map<String, Object> errorAttributes = getErrorAttributes(request, ErrorAttributeOptions.defaults());
 		HttpStatus status = getStatus(request);
-		return ResponseService.errorResponse(status, Map.of("message", determineErrorMessage(errorAttributes, request, status)));
+		String message = determineErrorMessage(errorAttributes, request, status);
+		return ResponseEntity.status(status).body(Response.error(message));
 	}
 
 	private String determineErrorMessage(Map<String, Object> errorAttributes, HttpServletRequest request, HttpStatus status) {

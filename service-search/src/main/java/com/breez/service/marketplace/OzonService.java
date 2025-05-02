@@ -1,5 +1,7 @@
 package com.breez.service.marketplace;
 
+import com.breez.dto.ProductDetailsDto;
+import com.breez.dto.ProductDto;
 import com.breez.exception.ClientException;
 import com.breez.exception.DataParsingException;
 import com.breez.exception.ServerException;
@@ -63,7 +65,7 @@ public class OzonService implements MarketplaceService {
 	}
 
 	@Override
-	public List<Map<String, Object>> fetchProducts(Map<String, String> parameters) throws IOException, InterruptedException {
+	public List<ProductDto> fetchProducts(Map<String, String> parameters) throws IOException, InterruptedException {
 		String url = OZON_BASE_URL + "/searchSuggestions/search/?text=" + parameters.get("title") + "&from_global=true";
 		String responseBody = getResponseBody(url);
 		String category = ozonAllProductsUtil.extractFirstCategoryValue(responseBody);
@@ -74,10 +76,17 @@ public class OzonService implements MarketplaceService {
 		return ozonAllProductsUtil.getAllProductsFromResponse(searchResponseBody);
 	}
 
-	public Map<String, Object> fetchSingleProduct(Long id) throws IOException, InterruptedException {
+	public ProductDetailsDto fetchSingleProduct(Long id) {
 		String url = OZON_BASE_URL + "/product/" + id;
-		String responseBody = getResponseBody(url);
-		return ozonSingleProductUtil.getSingleProductFromResponse(responseBody, id);
+		try {
+			String responseBody = getResponseBody(url);
+			return ozonSingleProductUtil.getSingleProductFromResponse(responseBody, id);
+		} catch (IOException e) {
+			throw new ServerException("Ozon: Failed to fetch data from source");
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+			throw new ServerException("Ozon: Interrupted while processing request");
+		}
 	}
 
 	@Override
@@ -131,7 +140,7 @@ public class OzonService implements MarketplaceService {
 		} else if (statusCode >= 400 && statusCode <= 499) {
 			throw new ClientException(HttpStatus.valueOf(statusCode), "Ozon: Client error");
 		} else if (statusCode >= 500 && statusCode <= 599) {
-			throw new ServerException(HttpStatus.valueOf(statusCode), "Ozon: Server error");
+			throw new ServerException("Ozon: Server error");
 		}
 		return null;
 	}
