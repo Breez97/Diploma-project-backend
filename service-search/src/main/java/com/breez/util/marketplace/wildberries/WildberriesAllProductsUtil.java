@@ -1,14 +1,12 @@
 package com.breez.util.marketplace.wildberries;
 
 import com.breez.dto.ProductDto;
-import com.breez.dto.response.ProductsSearchResponse;
 import com.breez.exception.DataParsingException;
 import com.breez.mapper.ObjectMapperSingleton;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -32,7 +30,7 @@ public class WildberriesAllProductsUtil extends WildberriesUtil {
 			return extractProducts(rootNode);
 		} catch (Exception e) {
 			logger.error("Wildberries getAllProductsFromResponse error={}", e.getMessage());
-			throw new DataParsingException(HttpStatus.INTERNAL_SERVER_ERROR, "Ozon: " + e.getMessage());
+			throw new DataParsingException("Ozon: " + e.getMessage());
 		}
 	}
 
@@ -69,7 +67,7 @@ public class WildberriesAllProductsUtil extends WildberriesUtil {
 			return extractProductInfo(id, rootNode);
 		} catch (Exception e) {
 			logger.error("Wildberries: getProductInfoFromResponse error={}", e.getMessage());
-			throw new DataParsingException(HttpStatus.INTERNAL_SERVER_ERROR, "Ozon: " + e.getMessage());
+			throw new DataParsingException("Ozon: " + e.getMessage());
 		}
 	}
 

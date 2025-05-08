@@ -3,12 +3,14 @@ package com.breez.service.implementation;
 import com.breez.dto.request.LoginRequest;
 import com.breez.dto.request.RegisterRequest;
 import com.breez.dto.response.AuthResponse;
+import com.breez.entity.Mail;
 import com.breez.enums.Role;
 import com.breez.enums.VerificationType;
+import com.breez.exception.auth.InvalidPasswordException;
 import com.breez.exception.auth.TokenRefreshException;
 import com.breez.exception.auth.UserAlreadyExistsException;
 import com.breez.exception.auth.VerificationException;
-import com.breez.exception.favorite.ResourceNotFoundException;
+import com.breez.exception.UserNotFoundException;
 import com.breez.model.RefreshToken;
 import com.breez.model.User;
 import com.breez.model.UserVerification;
@@ -17,10 +19,14 @@ import com.breez.repository.UserRepository;
 import com.breez.repository.UserVerificationRepository;
 import com.breez.security.CustomUserDetails;
 import com.breez.service.AuthService;
+import com.breez.service.EmailService;
 import com.breez.util.JwtTokenProvider;
+import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.MailException;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -31,7 +37,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
+
+import static com.breez.constants.Constants.SKIP_VERIFICATION_CODE_VALUE;
+import static com.breez.constants.Constants.VERIFICATION_CODE_EXPIRATION_MINUTES;
 
 @Service
 @RequiredArgsConstructor
@@ -39,20 +49,22 @@ public class AuthServiceImplementation implements AuthService {
 
 	private static final Logger logger = LoggerFactory.getLogger(AuthServiceImplementation.class);
 
+	private final AuthenticationManager authenticationManager;
+	private final EmailService emailService;
+	private final JwtTokenProvider jwtTokenProvider;
+	private final PasswordEncoder passwordEncoder;
+	private final RefreshTokenRepository refreshTokenRepository;
 	private final UserRepository userRepository;
 	private final UserVerificationRepository userVerificationRepository;
-	private final RefreshTokenRepository refreshTokenRepository;
-	private final PasswordEncoder passwordEncoder;
-	private final JwtTokenProvider jwtTokenProvider;
-	private final AuthenticationManager authenticationManager;
 
 	private final SecureRandom random = new SecureRandom();
 
-	private static final long VERIFICATION_CODE_EXPIRATION_MINUTES = 15;
+	@Value("${skip.code.verification:false}")
+	private boolean skipCodeVerification;
 
 	@Override
 	@Transactional
-	public void register(RegisterRequest request) throws UserAlreadyExistsException {
+	public void register(RegisterRequest request) {
 		String email = request.getEmail();
 		if (userRepository.existsByEmail(email)) {
 			logger.error("Registration failed: email {} already exists", email);
@@ -69,6 +81,9 @@ public class AuthServiceImplementation implements AuthService {
 				.build();
 
 		long verificationCode = generateVerificationCode();
+		if (skipCodeVerification) {
+			verificationCode = SKIP_VERIFICATION_CODE_VALUE;
+		}
 		LocalDateTime expiryTime = LocalDateTime.now().plusMinutes(VERIFICATION_CODE_EXPIRATION_MINUTES);
 		UserVerification verification = UserVerification.builder()
 				.user(newUser)
@@ -80,15 +95,25 @@ public class AuthServiceImplementation implements AuthService {
 		userRepository.save(newUser);
 		userVerificationRepository.save(verification);
 
-		// TODO: email verification
-		logger.info("Generated verification code {} for user {}", verificationCode, newUser.getEmail());
+		logger.info("Generated verification code {{}} for user {}", verificationCode, newUser.getEmail());
+		if (!skipCodeVerification) {
+			try {
+				Mail mail = Mail.builder().receiver(email).subject("EasyFind: Verification code").code(String.valueOf(verificationCode)).build();
+				emailService.sendEmailWithThymeleaf(mail);
+			} catch (MailException | MessagingException e) {
+				logger.error(Arrays.toString(e.getStackTrace()));
+			}
+		}
 	}
 
 	@Override
 	@Transactional
-	public void verifyUser(String email, Long code) throws VerificationException {
+	public void verify(String email, Long code) {
+		if (skipCodeVerification) {
+			code = SKIP_VERIFICATION_CODE_VALUE;
+		}
 		User referenceUser = userRepository.findByEmail(email)
-				.orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
+				.orElseThrow(() -> new UserNotFoundException("User not found with email: " + email));
 		UserVerification verification = userVerificationRepository.findByUserIdAndCode(referenceUser.getId(), code)
 				.orElseThrow(() -> new VerificationException("Invalid verification code"));
 		if (verification.getExpiryTime().isBefore(LocalDateTime.now())) {
@@ -112,8 +137,16 @@ public class AuthServiceImplementation implements AuthService {
 	@Override
 	@Transactional
 	public AuthResponse login(LoginRequest request) {
+		String email = request.getEmail();
+		String password = request.getPassword();
+		User userDatabase = userRepository.findByEmail(email)
+				.orElseThrow(() -> new UserNotFoundException("User not found with email: " + email));
+		if (!passwordEncoder.matches(password, userDatabase.getPasswordHash())) {
+			throw new InvalidPasswordException("Invalid password");
+		}
+
 		Authentication authentication = authenticationManager.authenticate(
-				new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
+				new UsernamePasswordAuthenticationToken(email, password)
 		);
 
 		SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -134,6 +167,14 @@ public class AuthServiceImplementation implements AuthService {
 				.build();
 		refreshTokenRepository.save(refreshTokenEntity);
 		return mapToDto(user.getId(), accessToken, refreshTokenValue);
+	}
+
+	@Override
+	@Transactional
+	public void logout(String email) {
+		User user = userRepository.findByEmail(email)
+				.orElseThrow(() -> new UserNotFoundException("User not found with email: " + email));
+		revokeAllUsersTokens(user);
 	}
 
 	@Override
@@ -170,7 +211,6 @@ public class AuthServiceImplementation implements AuthService {
 		}
 		validUserTokens.forEach(token -> token.setRevoked(true));
 		refreshTokenRepository.saveAll(validUserTokens);
-		logger.info("Revoked all refresh tokens for user {}", user);
 	}
 
 	private AuthResponse mapToDto(Long userId, String accessToken, String refreshToken) {

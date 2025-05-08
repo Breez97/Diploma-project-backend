@@ -19,7 +19,7 @@ mkdir -p logs
 start_service() {
   local service_dir=$1
   pushd "$service_dir" > /dev/null
-  mvn clean spring-boot:run -Plocal > "../logs/${service_dir}.log" 2>&1 &
+  mvn spring-boot:run -Plocal > "../logs/${service_dir}.log" 2>&1 &
   echo $! >> ../.pids
   popd > /dev/null
 }
@@ -27,11 +27,13 @@ start_service() {
 start_service api-gateway
 #start_service service-vaadin
 start_service service-search
+start_service service-users
 
 declare -A services=(
   ["api-gateway"]=$API_GATEWAY_PORT
 #  ["service-vaadin"]=$SERVICE_VAADIN_PORT
   ["service-search"]=$SERVICE_SEARCH_PORT
+  ["service-users"]=$SERVICE_USERS_PORT
 )
 
 declare -a service_names

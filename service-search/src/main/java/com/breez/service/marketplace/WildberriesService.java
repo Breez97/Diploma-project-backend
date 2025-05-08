@@ -2,14 +2,13 @@ package com.breez.service.marketplace;
 
 import com.breez.dto.ProductDetailsDto;
 import com.breez.dto.ProductDto;
-import com.breez.dto.response.ProductsSearchResponse;
 import com.breez.exception.ClientException;
 import com.breez.exception.ServerException;
+import com.breez.service.MarketplaceService;
 import com.breez.util.marketplace.wildberries.WildberriesAllProductsUtil;
 import com.breez.util.marketplace.wildberries.WildberriesSingleProductUtil;
 import com.breez.util.marketplace.wildberries.WildberriesUtil;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -112,7 +111,7 @@ public class WildberriesService implements MarketplaceService {
 		if (statusCode == 200) {
 			return response.body();
 		} else if (statusCode >= 400 && statusCode <= 499) {
-			throw new ClientException(HttpStatus.valueOf(statusCode), "Wildberries: Client error");
+			throw new ClientException("Wildberries: Client error");
 		} else if (statusCode >= 500 && statusCode <= 599) {
 			throw new ServerException("Wildberries: Server error");
 		}

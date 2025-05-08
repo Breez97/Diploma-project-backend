@@ -45,7 +45,7 @@ public class GlobalErrorHandler implements ErrorWebExceptionHandler {
 		response.setStatusCode(status);
 		response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
 
-		Response customResponse = new Response();
+		Response<Void> customResponse = Response.error(message);
 
 		try {
 			byte[] responseBytes = objectMapper.writeValueAsBytes(customResponse);

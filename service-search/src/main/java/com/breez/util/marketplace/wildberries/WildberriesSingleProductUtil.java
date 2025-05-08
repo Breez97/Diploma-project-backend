@@ -9,7 +9,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -32,7 +31,7 @@ public class WildberriesSingleProductUtil extends WildberriesUtil {
 			return getProductInfo(rootNode, productData);
 		} catch (IOException e) {
 			logger.error("Wildberries getDescriptionAndOptionsFromResponse error={}", e.getMessage());
-			throw new DataParsingException(HttpStatus.INTERNAL_SERVER_ERROR, "Ozon: " + e.getMessage());
+			throw new DataParsingException("Ozon: " + e.getMessage());
 		}
 	}
 

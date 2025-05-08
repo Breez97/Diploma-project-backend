@@ -1,6 +1,6 @@
 package com.breez.model;
 
-import com.breez.service.marketplace.MarketplaceService;
+import com.breez.service.MarketplaceService;
 
 public class MarketplaceState {
 

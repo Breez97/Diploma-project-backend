@@ -3,11 +3,10 @@ package com.breez.controller;
 import com.breez.dto.Response;
 import com.breez.dto.request.CombinedSearchRequest;
 import com.breez.dto.response.ProductsSearchResponse;
-import com.breez.exception.NoProductsFoundException;
 import com.breez.model.ProductChunkResult;
 import com.breez.service.CombinedProductFetchingService;
 import com.breez.service.ValidationService;
-import com.breez.service.marketplace.MarketplaceService;
+import com.breez.service.MarketplaceService;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +20,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/search")
 public class CombinedController {
 
 	private static final Logger logger = LoggerFactory.getLogger(CombinedController.class);

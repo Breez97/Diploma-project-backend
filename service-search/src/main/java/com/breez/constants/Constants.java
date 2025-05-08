@@ -1,6 +1,6 @@
 package com.breez.constants;
 
-import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 public class Constants {
 
@@ -15,12 +15,8 @@ public class Constants {
 
 	public static final String COMMON_SORT_RATING = "rating";
 
-	public static final String COMMON_PAGE = "1";
-
 	// Default values
 	public static final String DEFAULT_SORT = COMMON_SORT_POPULAR;
-
-	public static final String DEFAULT_PAGE = COMMON_PAGE;
 
 	public static final Integer DEFAULT_CHUNK = 1;
 
@@ -70,11 +66,18 @@ public class Constants {
 	// С высоким рейтингом
 	public static final String OZON_SORT_RATING = "rating";
 
-	// Параметры для валидации
+	// search
+	public static final String REDIS_PRODUCTS_PREFIX = "products:%s:%s:%s";
 
-	public static final Set<String> SET_ALLOWED_MARKETPLACES = Set.of(WILDBERRIES, OZON);
+	public static final String REDIS_NEXT_PAGE_SUFFIX = ":nextPage";
 
-	public static final Set<String> SET_ALLOWED_SORT = Set.of(COMMON_SORT_POPULAR, COMMON_SORT_NEW, COMMON_SORT_PRICE_ASC,
-			COMMON_SORT_PRICE_DESC, COMMON_SORT_RATING);
+	public static final Integer COMBINED_CHUNK_SIZE = 12;
+
+	public static final Integer CHUNK_SIZE = 12;
+
+	// redis
+	public static final Long DEFAULT_CACHE_TIMEOUT = 30L;
+
+	public static final TimeUnit DEFAULT_CACHE_TIMEUNIT = TimeUnit.MINUTES;
 
 }

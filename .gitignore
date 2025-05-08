@@ -41,5 +41,5 @@ build/
 ### Logs ###
 /logs
 
-### Vaadin Generated Frontend ###
-/service-vaadin/src/main/frontend/
+### Images ###
+/service-users/uploads

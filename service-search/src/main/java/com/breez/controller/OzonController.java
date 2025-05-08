@@ -6,9 +6,9 @@ import com.breez.dto.request.MarketplaceSearchRequest;
 import com.breez.dto.request.SingleProductSearchRequest;
 import com.breez.dto.response.ProductsSearchResponse;
 import com.breez.model.ProductChunkResult;
-import com.breez.service.*;
-import com.breez.service.marketplace.OzonService;
 import com.breez.service.ProductsFetchingService;
+import com.breez.service.ValidationService;
+import com.breez.service.marketplace.OzonService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -18,7 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1")
+@RequestMapping("/api/v1/search")
 @RequiredArgsConstructor
 public class OzonController {
 

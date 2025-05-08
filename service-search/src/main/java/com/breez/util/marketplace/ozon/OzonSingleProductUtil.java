@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -29,7 +28,7 @@ public class OzonSingleProductUtil extends OzonUtil {
 			return getProductInfo(rootNode, id).orElse(null);
 		} catch (Exception e) {
 			logger.error("Ozon getSingleProductFromResponse error={}", e.getMessage());
-			throw new DataParsingException(HttpStatus.INTERNAL_SERVER_ERROR, "Ozon: " + e.getMessage());
+			throw new DataParsingException("Ozon: " + e.getMessage());
 		}
 	}
 
@@ -51,7 +50,7 @@ public class OzonSingleProductUtil extends OzonUtil {
 			return Optional.of(ObjectMapperSingleton.getInstance().readTree(innerHtmlText));
 		} catch (IOException e) {
 			logger.error("Ozon: parseInnerHtml exception={}", e.getMessage());
-			throw new DataParsingException(HttpStatus.INTERNAL_SERVER_ERROR, "Ozon: " + e.getMessage());
+			throw new DataParsingException("Ozon: " + e.getMessage());
 		}
 	}
 
@@ -101,7 +100,7 @@ public class OzonSingleProductUtil extends OzonUtil {
 						.orElse(null);
 			} catch (IOException e) {
 				logger.error("Ozon: extractImageUrl exception={}", e.getMessage());
-				throw new DataParsingException(HttpStatus.INTERNAL_SERVER_ERROR, "Ozon: " + e.getMessage());
+				throw new DataParsingException("Ozon: " + e.getMessage());
 			}
 		}
 		return null;
@@ -134,7 +133,7 @@ public class OzonSingleProductUtil extends OzonUtil {
 			return variantsNode.map(this::extractPriceFromVariantsNode).orElse(null);
 		} catch (IOException e) {
 			logger.info("Ozon: extractPrice exception={}", e.getMessage());
-			throw new DataParsingException(HttpStatus.INTERNAL_SERVER_ERROR, "Ozon: " + e.getMessage());
+			throw new DataParsingException("Ozon: " + e.getMessage());
 		}
 	}
 
@@ -202,7 +201,7 @@ public class OzonSingleProductUtil extends OzonUtil {
 			}
 		} catch (IOException e) {
 			logger.error("Ozon: extractOptions error={}", e.getMessage());
-			throw new DataParsingException(HttpStatus.INTERNAL_SERVER_ERROR, "Ozon: " + e.getMessage());
+			throw new DataParsingException("Ozon: " + e.getMessage());
 		}
 		return optionsList;
 	}

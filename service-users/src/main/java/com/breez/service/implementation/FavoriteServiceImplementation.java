@@ -3,15 +3,13 @@ package com.breez.service.implementation;
 import com.breez.dto.request.AddFavoriteRequest;
 import com.breez.dto.response.FavoriteItemResponse;
 import com.breez.exception.favorite.FavoriteAlreadyExistsException;
-import com.breez.exception.favorite.ResourceNotFoundException;
+import com.breez.exception.UserNotFoundException;
 import com.breez.model.User;
 import com.breez.model.UserFavorite;
 import com.breez.repository.UserFavoriteRepository;
 import com.breez.repository.UserRepository;
 import com.breez.service.FavoriteService;
 import lombok.RequiredArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,19 +19,26 @@ import java.util.List;
 @RequiredArgsConstructor
 public class FavoriteServiceImplementation implements FavoriteService {
 
-	private static final Logger logger = LoggerFactory.getLogger(FavoriteServiceImplementation.class);
-
 	private final UserFavoriteRepository favoriteRepository;
 	private final UserRepository userRepository;
 
 	@Override
+	@Transactional(readOnly = true)
+	public List<FavoriteItemResponse> getFavorites(Long userId) {
+		List<UserFavorite> favorites = favoriteRepository.findByUserId(userId);
+		return favorites.stream()
+				.map(this::mapToDto)
+				.toList();
+	}
+
+	@Override
 	@Transactional
-	public FavoriteItemResponse addFavorite(Long userId, AddFavoriteRequest request) throws FavoriteAlreadyExistsException, ResourceNotFoundException {
+	public FavoriteItemResponse addFavorite(Long userId, AddFavoriteRequest request) {
 		if (favoriteRepository.existsByUserIdAndItemId(userId, request.getItemId())) {
 			throw new FavoriteAlreadyExistsException("Item with ID " + request.getItemId() + " is already exists in favorites");
 		}
 		User userReference = userRepository.findById(userId)
-				.orElseThrow(() -> new ResourceNotFoundException("User not found with ID: " + userId));
+				.orElseThrow(() -> new UserNotFoundException("User not found with ID: " + userId));
 		UserFavorite newFavorite = UserFavorite.builder()
 				.user(userReference)
 				.itemId(request.getItemId())
@@ -46,20 +51,11 @@ public class FavoriteServiceImplementation implements FavoriteService {
 
 	@Override
 	@Transactional
-	public void removeFavorite(Long userId, Long itemId) throws ResourceNotFoundException {
+	public void removeFavorite(Long userId, Long itemId) {
 		if (!favoriteRepository.existsByUserIdAndItemId(userId, itemId)) {
-			throw new ResourceNotFoundException("Favorite item with ID " + itemId + " not found for this user.");
+			throw new UserNotFoundException("Favorite item with ID " + itemId + " not found for this user.");
 		}
 		favoriteRepository.deleteByUserIdAndItemId(userId, itemId);
-	}
-
-	@Override
-	@Transactional(readOnly = true)
-	public List<FavoriteItemResponse> getFavorites(Long userId) {
-		List<UserFavorite> favorites = favoriteRepository.findByUserId(userId);
-		return favorites.stream()
-				.map(this::mapToDto)
-				.toList();
 	}
 
 	private FavoriteItemResponse mapToDto(UserFavorite entity) {

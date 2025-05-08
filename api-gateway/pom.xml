@@ -16,7 +16,7 @@
 		<maven.compiler.source>17</maven.compiler.source>
 		<maven.compiler.target>17</maven.compiler.target>
 
-		<cloud.gateway.version>4.2.0</cloud.gateway.version>
+		<cloud.gateway.version>4.2.2</cloud.gateway.version>
 		<openapi.webflux.ui>2.8.6</openapi.webflux.ui>
 
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

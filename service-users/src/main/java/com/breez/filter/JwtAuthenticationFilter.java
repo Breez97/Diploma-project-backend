@@ -1,5 +1,6 @@
 package com.breez.filter;
 
+import com.breez.exception.auth.VerificationException;
 import com.breez.service.implementation.UserDetailsServiceImplementation;
 import com.breez.util.JwtTokenProvider;
 import jakarta.servlet.FilterChain;
@@ -20,6 +21,9 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 
+import static com.breez.constants.Constants.AUTHORIZATION_HEADER;
+import static com.breez.constants.Constants.BEARER_PREFIX;
+
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -28,9 +32,6 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 	private final JwtTokenProvider jwtTokenProvider;
 	private final UserDetailsServiceImplementation userDetailsService;
-
-	public static final String AUTHORIZATION_HEADER = "Authorization";
-	public static final String BEARER_PREFIX = "Bearer ";
 
 	@Override
 	protected void doFilterInternal(
@@ -55,6 +56,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 			}
 		} catch (Exception e) {
 			logger.error("Can't set user authentication: {}", e.getMessage());
+			throw new VerificationException("Invalid user");
 		}
 		filterChain.doFilter(request, response);
 	}

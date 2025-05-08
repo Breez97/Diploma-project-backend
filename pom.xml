@@ -14,7 +14,6 @@
 		<module>common-library</module>
 		<module>service-search</module>
 		<module>service-users</module>
-<!--		<module>service-vaadin</module>-->
 	</modules>
 
 	<properties>
@@ -67,6 +66,16 @@
 			<dependency>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-starter-data-redis</artifactId>
+				<version>${spring.boot.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-starter-mail</artifactId>
+				<version>${spring.boot.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-starter-thymeleaf</artifactId>
 				<version>${spring.boot.version}</version>
 			</dependency>
 

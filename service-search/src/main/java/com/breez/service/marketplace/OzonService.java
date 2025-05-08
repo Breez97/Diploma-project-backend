@@ -5,11 +5,11 @@ import com.breez.dto.ProductDto;
 import com.breez.exception.ClientException;
 import com.breez.exception.DataParsingException;
 import com.breez.exception.ServerException;
+import com.breez.service.MarketplaceService;
 import com.breez.util.marketplace.ozon.OzonAllProductsUtil;
 import com.breez.util.marketplace.ozon.OzonSingleProductUtil;
 import org.brotli.dec.BrotliInputStream;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayInputStream;
@@ -133,12 +133,12 @@ public class OzonService implements MarketplaceService {
 						return decompressBrotli(responseBodyBytes);
 					}
 				} catch (IOException e) {
-					throw new DataParsingException(HttpStatus.INTERNAL_SERVER_ERROR, "Ozon: " + e.getMessage());
+					throw new DataParsingException("Ozon: " + e.getMessage());
 				}
 			}
 			return null;
 		} else if (statusCode >= 400 && statusCode <= 499) {
-			throw new ClientException(HttpStatus.valueOf(statusCode), "Ozon: Client error");
+			throw new ClientException("Ozon: Client error");
 		} else if (statusCode >= 500 && statusCode <= 599) {
 			throw new ServerException("Ozon: Server error");
 		}
