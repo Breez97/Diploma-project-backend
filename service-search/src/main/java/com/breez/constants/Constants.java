@@ -71,6 +71,8 @@ public class Constants {
 
 	public static final String REDIS_NEXT_PAGE_SUFFIX = ":nextPage";
 
+	public static final String REDIS_PRODUCT_DETAILS_PREFIX = "product_details:%s:%s";
+
 	public static final Integer COMBINED_CHUNK_SIZE = 12;
 
 	public static final Integer CHUNK_SIZE = 12;

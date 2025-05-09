@@ -8,7 +8,6 @@ import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import static com.breez.constants.Constants.DEFAULT_CACHE_TIMEOUT;
 import static com.breez.constants.Constants.DEFAULT_CACHE_TIMEUNIT;

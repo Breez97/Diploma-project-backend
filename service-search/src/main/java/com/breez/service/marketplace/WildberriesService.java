@@ -5,6 +5,7 @@ import com.breez.dto.ProductDto;
 import com.breez.exception.ClientException;
 import com.breez.exception.ServerException;
 import com.breez.service.MarketplaceService;
+import com.breez.service.RedisService;
 import com.breez.util.marketplace.wildberries.WildberriesAllProductsUtil;
 import com.breez.util.marketplace.wildberries.WildberriesSingleProductUtil;
 import com.breez.util.marketplace.wildberries.WildberriesUtil;
@@ -32,15 +33,18 @@ import static com.breez.constants.Constants.WILDBERRIES_SORT_RATING;
 public class WildberriesService implements MarketplaceService {
 
 	private final HttpClient httpClient;
+	private final RedisService redisService;
 	private final WildberriesUtil wildberriesUtil;
 	private final WildberriesSingleProductUtil wildberriesSingleProductUtil;
 	private final WildberriesAllProductsUtil wildberriesAllProductsUtil;
 
 	public WildberriesService(HttpClient httpClient,
+							  RedisService redisService,
 							  @Qualifier("wildberriesUtil") WildberriesUtil wildberriesUtil,
 							  @Qualifier("wildberriesSingleProductUtil") WildberriesSingleProductUtil wildberriesSingleProductUtil,
 							  @Qualifier("wildberriesAllProductsUtil") WildberriesAllProductsUtil wildberriesAllProductsUtil) {
 		this.httpClient = httpClient;
+		this.redisService = redisService;
 		this.wildberriesUtil = wildberriesUtil;
 		this.wildberriesSingleProductUtil = wildberriesSingleProductUtil;
 		this.wildberriesAllProductsUtil = wildberriesAllProductsUtil;
@@ -74,12 +78,23 @@ public class WildberriesService implements MarketplaceService {
 
 	public ProductDetailsDto fetchSingleProduct(Long id) {
 		String url = getProductInfoLink(id);
+
+		String cacheKey = String.format(REDIS_PRODUCT_DETAILS_PREFIX, WILDBERRIES, id);
+		Object cachedData = redisService.getValue(cacheKey);
+		if (cachedData instanceof ProductDetailsDto) {
+			return (ProductDetailsDto) cachedData;
+		}
+
 		try {
 			String responseBody = getResponseBody(url);
 			ProductDto product = wildberriesAllProductsUtil.getProductInfoFromResponse(id, responseBody);
 			String descriptionAndOptionsUrl = getDescriptionAndOptionsInfoLink(id);
 			String responseBodyDescriptionAndOptions = getResponseBody(descriptionAndOptionsUrl);
-			return wildberriesSingleProductUtil.getDescriptionAndOptionsFromResponse(responseBodyDescriptionAndOptions, product);
+			ProductDetailsDto resultProductDetails = wildberriesSingleProductUtil.getDescriptionAndOptionsFromResponse(responseBodyDescriptionAndOptions, product);
+			if (resultProductDetails != null) {
+				redisService.saveValue(cacheKey, resultProductDetails);
+			}
+			return resultProductDetails;
 		} catch (IOException e) {
 			throw new ServerException("Wildberries: Failed to fetch data from source");
 		} catch (InterruptedException e) {

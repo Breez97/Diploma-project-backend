@@ -94,7 +94,11 @@ public class WildberriesSingleProductUtil extends WildberriesUtil {
 				Optional<String> nameOptional = Optional.ofNullable(infoNode.path("name")).map(JsonNode::asText);
 				Optional<String> valueOptional = Optional.ofNullable(infoNode.path("value")).map(JsonNode::asText);
 				if (nameOptional.isPresent() && valueOptional.isPresent()) {
-					optionsList.add(ProductOptionDto.builder().name(nameOptional.get()).value(valueOptional.get()).build());
+					String capitalizedName = capitalizeFirstLetter(nameOptional.get());
+					String capitalizedValue = capitalizeFirstLetter(valueOptional.get());
+					if (StringUtils.isNotBlank(capitalizedName) && StringUtils.isNotBlank(capitalizedValue)) {
+						optionsList.add(ProductOptionDto.builder().name(capitalizedName).value(capitalizedValue).build());
+					}
 				}
 			}
 		}

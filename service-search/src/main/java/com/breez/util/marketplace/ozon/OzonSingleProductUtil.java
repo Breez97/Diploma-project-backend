@@ -193,8 +193,10 @@ public class OzonSingleProductUtil extends OzonUtil {
 					for (JsonNode characteristicNode : characteristicsNode.get()) {
 						String name = characteristicNode.path("title").path("textRs").get(0).path("content").asText();
 						String value = characteristicNode.path("values").get(0).path("text").asText();
-						if (StringUtils.isNotBlank(name) && StringUtils.isNotBlank(value)) {
-							optionsList.add(ProductOptionDto.builder().name(name).value(value).build());
+						String capitalizedName = capitalizeFirstLetter(name);
+						String capitalizedValue = capitalizeFirstLetter(value);
+						if (StringUtils.isNotBlank(capitalizedName) && StringUtils.isNotBlank(capitalizedValue)) {
+							optionsList.add(ProductOptionDto.builder().name(capitalizedName).value(capitalizedValue).build());
 						}
 					}
 				}

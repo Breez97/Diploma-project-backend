@@ -6,10 +6,11 @@ import com.breez.exception.ClientException;
 import com.breez.exception.DataParsingException;
 import com.breez.exception.ServerException;
 import com.breez.service.MarketplaceService;
+import com.breez.service.RedisService;
 import com.breez.util.marketplace.ozon.OzonAllProductsUtil;
 import com.breez.util.marketplace.ozon.OzonSingleProductUtil;
+import lombok.RequiredArgsConstructor;
 import org.brotli.dec.BrotliInputStream;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayInputStream;
@@ -34,18 +35,13 @@ import static com.breez.constants.Constants.OZON_SORT_PRICE_DESC;
 import static com.breez.constants.Constants.OZON_SORT_RATING;
 
 @Service
+@RequiredArgsConstructor
 public class OzonService implements MarketplaceService {
 
 	private final HttpClient httpClient;
+	private final RedisService redisService;
 	private final OzonSingleProductUtil ozonSingleProductUtil;
 	private final OzonAllProductsUtil ozonAllProductsUtil;
-
-	@Autowired
-	public OzonService(HttpClient httpClient, OzonSingleProductUtil ozonSingleProductUtil, OzonAllProductsUtil ozonAllProductsUtil) {
-		this.httpClient = httpClient;
-		this.ozonSingleProductUtil = ozonSingleProductUtil;
-		this.ozonAllProductsUtil = ozonAllProductsUtil;
-	}
 
 	@Override
 	public Map<String, String> getSearchParameters(String title, String sort, String page) {
@@ -78,9 +74,20 @@ public class OzonService implements MarketplaceService {
 
 	public ProductDetailsDto fetchSingleProduct(Long id) {
 		String url = OZON_BASE_URL + "/product/" + id;
+
+		String cacheKey = String.format(REDIS_PRODUCT_DETAILS_PREFIX, OZON, id);
+		Object cachedData = redisService.getValue(cacheKey);
+		if (cachedData instanceof ProductDetailsDto) {
+			return (ProductDetailsDto) cachedData;
+		}
+
 		try {
 			String responseBody = getResponseBody(url);
-			return ozonSingleProductUtil.getSingleProductFromResponse(responseBody, id);
+			ProductDetailsDto resultProductDetails = ozonSingleProductUtil.getSingleProductFromResponse(responseBody, id);
+			if (resultProductDetails != null) {
+				redisService.saveValue(cacheKey, resultProductDetails);
+			}
+			return resultProductDetails;
 		} catch (IOException e) {
 			throw new ServerException("Ozon: Failed to fetch data from source");
 		} catch (InterruptedException e) {
