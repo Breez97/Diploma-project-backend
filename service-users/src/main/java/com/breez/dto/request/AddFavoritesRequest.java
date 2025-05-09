@@ -5,7 +5,7 @@ import jakarta.validation.constraints.Positive;
 import lombok.Data;
 
 @Data
-public class AddFavoriteRequest {
+public class AddFavoritesRequest {
 
 	@NotNull(message = "ItemId can't be null")
 	@Positive(message = "ItemId must be positive number")

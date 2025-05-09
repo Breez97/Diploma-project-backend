@@ -5,6 +5,7 @@ import com.breez.exception.*;
 import com.breez.exception.auth.UserAlreadyExistsException;
 import com.breez.exception.auth.VerificationException;
 import com.breez.exception.favorite.FavoriteAlreadyExistsException;
+import com.breez.exception.favorite.FavoriteNotFoundException;
 import com.breez.exception.users.InvalidFileException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -45,15 +46,15 @@ public class GlobalExceptionHandler {
 		return exceptionHandlerResponse(e, HttpStatus.FORBIDDEN);
 	}
 
-	@ExceptionHandler(UserNotFoundException.class)
-	public ResponseEntity<Response<Void>> noFoundExceptionHandler(UserNotFoundException e) {
+	@ExceptionHandler({UserNotFoundException.class, FavoriteNotFoundException.class})
+	public ResponseEntity<Response<Void>> noFoundExceptionHandler(CustomException e) {
 		return exceptionHandlerResponse(e, HttpStatus.NOT_FOUND);
 	}
 
 	@ExceptionHandler({UserAlreadyExistsException.class,
 			FavoriteAlreadyExistsException.class,
 			SearchHistoryAlreadyExistException.class})
-	public ResponseEntity<Response<Void>> conflictExceptionHandler(Exception e) {
+	public ResponseEntity<Response<Void>> conflictExceptionHandler(CustomException e) {
 		return exceptionHandlerResponse(e, HttpStatus.CONFLICT);
 	}
 

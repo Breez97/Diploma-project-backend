@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class FavoriteItemResponse {
+public class FavoritesItemResponse {
 
 	private Long itemId;
 	private String marketplaceSource;

@@ -11,8 +11,8 @@ public interface UserFavoriteRepository extends JpaRepository<UserFavorite, Long
 
 	List<UserFavorite> findByUserId(Long userId);
 
-	boolean existsByUserIdAndItemId(Long userId, Long itemId);
+	boolean existsByUserIdAndItemIdAndMarketplaceSource(Long userId, Long itemId, String marketplaceSource);
 
-	void deleteByUserIdAndItemId(Long userId, Long itemId);
+	void deleteByUserIdAndItemIdAndMarketplaceSource(Long userId, Long itemId, String marketplaceSource);
 
 }

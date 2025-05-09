@@ -48,6 +48,9 @@ SPRING_MAIL_USERNAME=USERNAME
 SPRING_MAIL_PASSWORD=PASSWORD
 ## allowed origins
 CORS_ALLOWED_ORIGINS=ALLOWED_ORIGINS (e.g., React: http://localhost:3000,http://192.168.1.72:3000)
+## path to images (folder will be created locally in service-users)
+## path: service-users/uploads/avatars
+PATH_TO_IMAGES=./uploads/avatars
 
 # services
 ## service-api-gateway
@@ -59,7 +62,7 @@ SERVICE_SEARCH_PORT=PORT_NUMBER (DEFAULT: 8081)
 ## service-users
 SERVICE_USERS_PORT=PORT_NUMBER (DEFAULT: 8082)
 SERVICE_USERS_DB_NAME=DB_NAME
-SKIP_CODE_VERIFICATION=false (DEFAULT: false) (Disable OTP code verification)
+SKIP_CODE_VERIFICATION=false (DEFAULT: false) (Disable connection to mail and OTP code varification)
 JWT_SECRET=JWT_SECRET
 JWT_ACCESS_TOKEN_EXPIRATION_MS=900000 # 15 minutes
 JWT_REFRESH_TOKEN_EXPIRATION_MS=604800000 # 7 days
