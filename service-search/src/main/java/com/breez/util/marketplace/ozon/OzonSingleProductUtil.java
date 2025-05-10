@@ -70,7 +70,7 @@ public class OzonSingleProductUtil extends OzonUtil {
 				.title(stringOrNull(title))
 				.imageUrl(stringOrNull(imageUrl))
 				.brand(stringOrNull(brand))
-				.price(stringOrNull(price))
+				.price(convertPriceStringToBigDecimalOrNull(price))
 				.rating(stringOrNull(rating))
 				.feedbacks(stringOrNull(feedbacks))
 				.description(stringOrNull(description))

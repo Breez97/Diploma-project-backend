@@ -12,6 +12,8 @@
 	<modules>
 		<module>api-gateway</module>
 		<module>common-library</module>
+		<module>service-monitoring</module>
+		<module>service-notifications</module>
 		<module>service-search</module>
 		<module>service-users</module>
 	</modules>
@@ -21,9 +23,12 @@
 		<maven.compiler.target>17</maven.compiler.target>
 
 		<apache.commons.version>3.17.0</apache.commons.version>
+		<fasterxml.jackson.core.version>2.18.2</fasterxml.jackson.core.version>
+		<kafka.version>3.3.5</kafka.version>
 		<lettuce.core.version>6.5.5.RELEASE</lettuce.core.version>
 		<lombok.version>1.18.36</lombok.version>
 		<openapi.version>2.8.6</openapi.version>
+		<postgresql.version>42.7.5</postgresql.version>
 		<spring.data.redis>3.4.5</spring.data.redis>
 		<spring.boot.security.version>6.4.2</spring.boot.security.version>
 		<spring.boot.version>3.4.5</spring.boot.version>
@@ -117,6 +122,21 @@
 				<groupId>org.springframework.data</groupId>
 				<artifactId>spring-data-redis</artifactId>
 				<version>${spring.data.redis}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.postgresql</groupId>
+				<artifactId>postgresql</artifactId>
+				<version>${postgresql.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.kafka</groupId>
+				<artifactId>spring-kafka</artifactId>
+				<version>${kafka.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.fasterxml.jackson.core</groupId>
+				<artifactId>jackson-core</artifactId>
+				<version>${fasterxml.jackson.core.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>

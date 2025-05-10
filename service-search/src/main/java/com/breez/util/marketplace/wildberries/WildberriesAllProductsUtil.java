@@ -95,7 +95,7 @@ public class WildberriesAllProductsUtil extends WildberriesUtil {
 				.title(stringOrNull(title))
 				.imageUrl(stringOrNull(imageUrl))
 				.brand(stringOrNull(brand))
-				.price(stringOrNull(price))
+				.price(convertPriceStringToBigDecimalOrNull(price))
 				.rating(stringOrNull(rating))
 				.feedbacks(stringOrNull(feedbacks))
 				.marketplace(WILDBERRIES)

@@ -1,7 +1,7 @@
 package com.breez.service.implementation;
 
 import com.breez.entity.Mail;
-import com.breez.service.EmailService;
+import com.breez.service.MailService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
@@ -15,7 +15,7 @@ import org.thymeleaf.context.Context;
 
 @Service
 @RequiredArgsConstructor
-public class EmailServiceImplementation implements EmailService {
+public class MailServiceImplementation implements MailService {
 
 	private final TemplateEngine templateEngine;
 	private final JavaMailSender mailSender;
@@ -26,10 +26,7 @@ public class EmailServiceImplementation implements EmailService {
 		Context context = new Context();
 
 		String receiver = mail.getReceiver();
-		String code = mail.getCode();
-		context.setVariable("email", receiver);
-		context.setVariable("code", code);
-		String process = templateEngine.process("VerificationMail", context);
+		String process = templateEngine.process("NotificationMail", context);
 		MimeMessage message = mailSender.createMimeMessage();
 		MimeMessageHelper helper = new MimeMessageHelper(message);
 		helper.setSubject(mail.getSubject());
@@ -39,4 +36,5 @@ public class EmailServiceImplementation implements EmailService {
 
 		mailSender.send(message);
 	}
+
 }

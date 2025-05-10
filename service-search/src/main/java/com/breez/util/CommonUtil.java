@@ -3,6 +3,7 @@ package com.breez.util;
 import com.breez.dto.ProductOptionDto;
 import org.apache.commons.lang3.StringUtils;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public abstract class CommonUtil {
@@ -26,6 +27,17 @@ public abstract class CommonUtil {
 			return null;
 		}
 		return list;
+	}
+
+	protected BigDecimal convertPriceStringToBigDecimalOrNull(String price) {
+		if (StringUtils.isNotBlank(price) && !price.trim().isEmpty() && !"null".equals(price.trim())) {
+			try {
+				return new BigDecimal(price.replaceAll(",", "."));
+			} catch (NumberFormatException e) {
+				return null;
+			}
+		}
+		return null;
 	}
 
 }

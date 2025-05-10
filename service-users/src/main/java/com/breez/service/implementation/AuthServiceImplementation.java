@@ -19,7 +19,7 @@ import com.breez.repository.UserRepository;
 import com.breez.repository.UserVerificationRepository;
 import com.breez.security.CustomUserDetails;
 import com.breez.service.AuthService;
-import com.breez.service.EmailService;
+import com.breez.service.MailService;
 import com.breez.util.JwtTokenProvider;
 import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
@@ -50,7 +50,7 @@ public class AuthServiceImplementation implements AuthService {
 	private static final Logger logger = LoggerFactory.getLogger(AuthServiceImplementation.class);
 
 	private final AuthenticationManager authenticationManager;
-	private final EmailService emailService;
+	private final MailService mailService;
 	private final JwtTokenProvider jwtTokenProvider;
 	private final PasswordEncoder passwordEncoder;
 	private final RefreshTokenRepository refreshTokenRepository;
@@ -99,7 +99,7 @@ public class AuthServiceImplementation implements AuthService {
 		if (!skipCodeVerification) {
 			try {
 				Mail mail = Mail.builder().receiver(email).subject("EasyFind: Verification code").code(String.valueOf(verificationCode)).build();
-				emailService.sendEmailWithThymeleaf(mail);
+				mailService.sendEmailWithThymeleaf(mail);
 			} catch (MailException | MessagingException e) {
 				logger.error(Arrays.toString(e.getStackTrace()));
 			}
