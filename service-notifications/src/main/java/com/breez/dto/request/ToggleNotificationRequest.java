@@ -8,6 +8,6 @@ public class ToggleNotificationRequest {
 	private String email;
 	private Long itemId;
 	private String marketplaceSource;
-	private boolean isEnabled;
+	private String notification;
 
 }

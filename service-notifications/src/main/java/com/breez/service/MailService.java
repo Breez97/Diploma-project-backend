@@ -6,6 +6,6 @@ import org.springframework.mail.MailException;
 
 public interface MailService {
 
-	void sendEmailWithThymeleaf(Mail mail) throws MailException, MessagingException;
+	void sendEmailWithThymeleaf(Mail mail)  throws MailException, MessagingException;
 
 }

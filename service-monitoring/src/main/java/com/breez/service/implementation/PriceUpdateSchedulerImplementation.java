@@ -38,8 +38,8 @@ public class PriceUpdateSchedulerImplementation implements PriceUpdateScheduler 
 	private static final int MAX_PRICE_HISTORY_ENTRIES = 5;
 
 	@Override
-	// @Scheduled(cron = "0 0 0 * * ?") // каждый день 00:00
-	@Scheduled(fixedDelay = 10000) // 10 секунд
+	@Scheduled(cron = "0 0 0 * * ?") // каждый день 00:00
+	// @Scheduled(fixedDelay = 10000) // 10 секунд
 	@Transactional
 	public void updatePricesAndNotify() {
 		List<MonitoredItem> itemsToUpdate = monitoredItemRepository.findAll();
@@ -72,7 +72,6 @@ public class PriceUpdateSchedulerImplementation implements PriceUpdateScheduler 
 							.itemId(item.getItemId())
 							.marketplaceSource(item.getMarketplaceSource())
 							.productName(productDetails.getTitle())
-							.productDescription(productDetails.getDescription())
 							.productImageUrl(productDetails.getImageUrl())
 							.productUrl(productDetails.getExternalLink())
 							.oldPrice(oldPrice)

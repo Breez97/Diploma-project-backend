@@ -4,7 +4,7 @@ set -e
 
 # start services
 start_services() {
-	./kafka-local.sh up
+	./local-environment.sh up
 
 	if [ -f .env ]; then
       set -o allexport
@@ -28,14 +28,14 @@ start_services() {
 
     start_service api-gateway
     start_service service-monitoring
-#    start_service service-notifications
+    start_service service-notifications
     start_service service-search
     start_service service-users
 
     declare -A services=(
       ["api-gateway"]=$API_GATEWAY_PORT
       ["service-monitoring"]=$SERVICE_MONITORING_PORT
-#      ["service-notifications"]=$SERVICE_NOTIFICATIONS_PORT
+      ["service-notifications"]=$SERVICE_NOTIFICATIONS_PORT
       ["service-search"]=$SERVICE_SEARCH_PORT
       ["service-users"]=$SERVICE_USERS_PORT
     )
@@ -90,7 +90,7 @@ start_services() {
 
 # stop services
 stop_services() {
-	./kafka-local.sh down
+	./local-environment.sh down
 
 	if [ ! -f .pids ]; then
       echo "No running services found"
@@ -109,6 +109,8 @@ stop_services() {
 
 # configuration
 if [[ "$1" == "up" ]]; then
+	mvn clean install -DskipTests -U
+	chmod +x ./local-environment.sh
 	echo "Starting services"
 	start_services
 elif [[ "$1" == "down" ]]; then

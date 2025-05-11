@@ -2,6 +2,7 @@ package com.breez.service.implementation;
 
 import com.breez.dto.request.ToggleNotificationRequest;
 import com.breez.dto.response.ToggleNotificationsResponse;
+import com.breez.enums.Notification;
 import com.breez.exception.NotificationItemNotFoundException;
 import com.breez.model.NotificationItem;
 import com.breez.repository.NotificationItemRepository;
@@ -21,7 +22,8 @@ public class ToggleNotificationsServiceImplementation implements ToggleNotificat
 		String email = request.getEmail();
 		Long itemId = request.getItemId();
 		String marketplaceSource = request.getMarketplaceSource();
-		boolean isEnabled = request.isEnabled();
+		String notification = request.getNotification();
+		boolean isEnabled = Notification.ENABLE.getValue().equals(notification);
 		NotificationItem item = notificationItemRepository.findByEmailAndItemIdAndMarketplaceSource(email, itemId, marketplaceSource)
 				.orElseThrow(() -> new NotificationItemNotFoundException("Notification item not found"));
 		item.setNotificationsEnabled(isEnabled);

@@ -31,9 +31,9 @@ public class MailServiceImplementation implements MailService {
 		context.setVariable("code", code);
 		String process = templateEngine.process("VerificationMail", context);
 		MimeMessage message = mailSender.createMimeMessage();
-		MimeMessageHelper helper = new MimeMessageHelper(message);
+		MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 		helper.setSubject(mail.getSubject());
-		helper.setFrom("EasyFind");
+		helper.setFrom("SearchScope");
 		helper.setText(process, true);
 		helper.setTo(receiver);
 

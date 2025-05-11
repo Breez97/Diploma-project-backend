@@ -1,6 +1,5 @@
 <!doctype html>
-<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:th="http://www.thymeleaf.org">
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -33,7 +32,7 @@
             line-height: 1.5;
         }
         .email, .code {
-            color: #007BFF;
+            color: #007bff;
             font-weight: bold;
         }
         .footer {
@@ -45,12 +44,12 @@
 </head>
 <body>
 <div class="email-container">
-    <h1>Welcome, <span class="email" th:text="${email}">User</span>!</h1>
-    <h3>Here is your verification code: <span class="code" th:text="${code}">123456</span></h3>
-    <p>If you have any questions, feel free to reach out to us at any time.</p>
-    <p>Best Regards,<br>EasyFind</p>
+    <h1>Добро пожаловать, <span class="email" th:text="${email}">User</span>!</h1>
+    <h3>Код для потверждения электронной почты: <span class="code" th:text="${code}">123456</span></h3>
+    <p>Если у вас есть какие либо вопросы, предложения или замечания, пишите нам.</p>
+    <p>Всего наилучшего, команда<br>SearchScope<br>SearchScope@gmail.com</p>
     <div class="footer">
-        &copy; 2025 EasyFind. All rights reserved.
+        &copy; 2025 SearchScope. Все права защищены.
     </div>
 </div>
 </body>

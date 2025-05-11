@@ -17,7 +17,6 @@ public class PriceAlertEventDto {
 	private Long itemId;
 	private String marketplaceSource;
 	private String productName;
-	private String productDescription;
 	private String productImageUrl;
 	private String productUrl;
 	private BigDecimal oldPrice;

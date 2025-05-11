@@ -2,17 +2,22 @@ package com.breez.service.implementation;
 
 import com.breez.dto.event.NotificationsEventDto;
 import com.breez.dto.event.PriceAlertEventDto;
+import com.breez.entity.Mail;
 import com.breez.enums.Notification;
 import com.breez.model.NotificationItem;
 import com.breez.repository.NotificationItemRepository;
 import com.breez.service.MailService;
 import com.breez.service.NotificationsSettingsService;
+import jakarta.mail.MessagingException;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.MailException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
 import java.util.Optional;
 
 @Service
@@ -22,6 +27,9 @@ public class NotificationsSettingsServiceImplementation implements Notifications
 	private static final Logger logger = LoggerFactory.getLogger(NotificationsSettingsServiceImplementation.class);
 	private final NotificationItemRepository notificationItemRepository;
 	private final MailService mailService;
+
+	@Value("${disable.notifications.general:false}")
+	private Boolean disableNotificationsGeneral;
 
 	@Override
 	@Transactional
@@ -63,8 +71,13 @@ public class NotificationsSettingsServiceImplementation implements Notifications
 		Long itemId = event.getItemId();
 		String marketplaceSource = event.getMarketplaceSource();
 		Optional<NotificationItem> settingOpt = notificationItemRepository.findByEmailAndItemIdAndMarketplaceSource(email, itemId, marketplaceSource);
-		if (settingOpt.isPresent() && settingOpt.get().isNotificationsEnabled()) {
-			// Отправка сообщения
+		if (settingOpt.isPresent() && settingOpt.get().isNotificationsEnabled() && !disableNotificationsGeneral) {
+			try {
+				Mail mail = Mail.builder().subject("Уведомление о снижении цены").receiver(email).event(event).build();
+				mailService.sendEmailWithThymeleaf(mail);
+			} catch (MailException | MessagingException e) {
+				logger.error(Arrays.toString(e.getStackTrace()));
+			}
 		}
 	}
 }

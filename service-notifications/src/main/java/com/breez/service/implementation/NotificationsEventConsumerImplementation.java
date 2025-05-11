@@ -8,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.kafka.annotation.KafkaListener;
-import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -25,8 +24,8 @@ public class NotificationsEventConsumerImplementation implements NotificationsEv
 	}
 
 	@KafkaListener(topics = "${app.kafka.topic.user-price-alerts}", groupId = "${spring.kafka.consumer.group-id}-alerts")
-	public void listenPriceAlertsEvent(@Payload PriceAlertEventDto event) {
-
+	public void handlerPriceAlertsEvents(PriceAlertEventDto event) {
+		notificationsSettingsService.priceAlertEventDto(event);
 	}
 
 }
