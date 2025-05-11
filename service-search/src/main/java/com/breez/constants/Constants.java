@@ -1,6 +1,6 @@
 package com.breez.constants;
 
-import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 public class Constants {
 
@@ -15,10 +15,12 @@ public class Constants {
 
 	public static final String COMMON_SORT_RATING = "rating";
 
-	public static final Set<String> SET_AVAILABLE_SORT = Set.of(COMMON_SORT_POPULAR, COMMON_SORT_NEW, COMMON_SORT_PRICE_ASC,
-			COMMON_SORT_PRICE_DESC, COMMON_SORT_RATING);
+	// Default values
+	public static final String DEFAULT_SORT = COMMON_SORT_POPULAR;
 
-	public static final String COMMON_PAGE = "1";
+	public static final Integer DEFAULT_CHUNK = 1;
+
+	public static final String DEFAULT_MARKETPLACES = "wildberries,ozon";
 
 	// Wildberries
 	public static final String WILDBERRIES = "wildberries";
@@ -29,15 +31,15 @@ public class Constants {
 
 	public static final String WILDBERRIES_BASE_URL = "https://search.wb.ru/exactmatch/ru/common/v9/search?ab_testing=false&appType=1&curr=rub&";
 
-	public static final String WILDBERRIES_X_CAPTCHA_ID = "Catalog 1|1|1745257722|AA==|9d3c8195ec9f40b0abc3eec89fe4985e|GbYNyALGK4iC6A49gulA7O9i1PNDS5l29DKM810XEMM";
+	public static final String WILDBERRIES_X_CAPTCHA_ID = "Catalog 1|1|1745441540|AA==|7cbede1ed09e4d01a57fdc9755537c65|g66RJNOc2ZO05ZG72kHImAyfQGejol3flXNqYduAMid";
 
-	public static final String WILDBERRIES_X_QUERY_ID = "qid533684664174323952120250412112347";
+	public static final String WILDBERRIES_X_QUERY_ID = "qid533684664174323952120250423165235";
 
 	// По популярности
 	public static final String WILDBERRIES_SORT_POPULAR = "popular";
 	// По новинкам
 	public static final String WILDBERRIES_SORT_NEW = "newly";
-	// По пвозрастанию цены
+	// По возрастанию цены
 	public static final String WILDBERRIES_SORT_PRICE_ASC = "priceup";
 	// По убыванию цены
 	public static final String WILDBERRIES_SORT_PRICE_DESC = "pricedown";
@@ -63,5 +65,21 @@ public class Constants {
 	public static final String OZON_SORT_PRICE_DESC = "price_desc";
 	// С высоким рейтингом
 	public static final String OZON_SORT_RATING = "rating";
+
+	// search
+	public static final String REDIS_PRODUCTS_PREFIX = "products:%s:%s:%s";
+
+	public static final String REDIS_NEXT_PAGE_SUFFIX = ":nextPage";
+
+	public static final String REDIS_PRODUCT_DETAILS_PREFIX = "product_details:%s:%s";
+
+	public static final Integer COMBINED_CHUNK_SIZE = 12;
+
+	public static final Integer CHUNK_SIZE = 12;
+
+	// redis
+	public static final Long DEFAULT_CACHE_TIMEOUT = 30L;
+
+	public static final TimeUnit DEFAULT_CACHE_TIMEUNIT = TimeUnit.MINUTES;
 
 }

@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title th:text="'Изменение цены на товар: ' + ${productName}">Изменение цены на товар</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        table {
+            border-spacing: 0;
+            width: 100%;
+        }
+
+        td {
+            padding: 0;
+        }
+
+        img {
+            border: 0;
+            -ms-interpolation-mode: bicubic;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.07);
+        }
+
+        .header {
+            background-color: #007bff;
+            padding: 20px;
+            text-align: center;
+            border-top-left-radius: 8px;
+            border-top-right-radius: 8px;
+        }
+
+        .header h1 {
+            margin: 0;
+            color: #ffffff;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .content {
+            padding: 25px 30px;
+            color: #212529;
+            line-height: 1.6;
+            font-size: 16px;
+        }
+
+        .product-image-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .product-image {
+            max-width: 200px;
+            height: auto;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+        }
+
+        .price-change {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f0f8ff;
+            border-left: 4px solid #007bff;
+            border-radius: 4px;
+        }
+
+        .price-old {
+            text-decoration: line-through;
+            color: #6c757d;
+            font-size: 18px;
+        }
+
+        .price-new {
+            color: #dc3545;
+            font-weight: bold;
+            font-size: 22px;
+        }
+
+        .button-container {
+            text-align: center;
+            margin-top: 25px;
+            margin-bottom: 15px;
+        }
+
+        .button {
+            background-color: #007bff;
+            color: #ffffff;
+            padding: 12px 25px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: 500;
+            font-size: 16px;
+            display: inline-block;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 12px;
+            color: #6c757d;
+        }
+        .footer a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        @media screen and (max-width: 600px) {
+            .container {
+                width: 100% !important;
+                border-radius: 0 !important;
+                box-shadow: none !important;
+            }
+            .content {
+                padding: 20px 15px !important;
+            }
+            .header h1 {
+                font-size: 20px !important;
+            }
+            .product-image {
+                max-width: 150px !important;
+            }
+        }
+    </style>
+</head>
+
+<body style="margin: 0; padding: 0; background-color: #f8f9fa; font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica Neue, Arial, sans-serif;">
+<table>
+    <tr>
+        <td style="padding: 20px 0;">
+            <table>
+                <tr>
+                    <td>
+                        <table class="container"
+                               style="width: 100%; max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.07);">
+                            <tr>
+                                <td class="header"
+                                    style="background-color: #007bff; padding: 25px 20px; text-align: center; border-top-left-radius: 8px; border-top-right-radius: 8px;">
+                                    <h1 style="margin: 0; color: #ffffff; font-size: 24px; font-weight: 600;">
+                                        Снижение цены!
+                                    </h1>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="content"
+                                    style="padding: 30px; color: #212529; line-height: 1.6; font-size: 16px;">
+                                    <p style="margin: 0 0 15px 0;">Здравствуйте!</p>
+                                    <p style="margin: 0 0 20px 0;">
+                                        Рады сообщить, что цена на товар, который вы отслеживаете, изменилась:
+                                    </p>
+
+                                    <div class="product-image-container"
+                                         style="text-align: center; margin-bottom: 25px;">
+                                        <img th:src="${productImageUrl}" th:alt="${productName}" class="product-image"
+                                             alt="Product Image"
+                                             style="max-width: 200px; height: auto; border: 1px solid #dee2e6; border-radius: 4px;"/>
+                                    </div>
+
+                                    <h2 th:text="${productName}"
+                                        style="font-size: 20px; color: #343a40; margin-top: 0; margin-bottom: 10px; text-align: center; font-weight: 600;">
+                                        Название товара
+                                    </h2>
+
+                                    <div class="price-change"
+                                         style="margin: 25px 0; padding: 15px; background-color: #e6f2ff; border-left: 4px solid #007bff; border-radius: 4px;">
+                                        <p style="margin: 0; text-align: center; font-size: 16px;">
+                                            Старая цена:
+                                            <span class="price-old"
+                                                  th:text="${#numbers.formatDecimal(oldPrice, 1, 'COMMA', 2, 'POINT')} + ' ₽'"
+                                                  style="text-decoration: line-through; color: #6c757d; font-size: 18px;">
+                                          1999.00 ₽
+                                    </span>
+                                        </p>
+                                        <p style="margin: 10px 0 0 0; text-align: center; font-size: 18px;">
+                                            Новая цена:
+                                            <strong class="price-new"
+                                                    th:text="${#numbers.formatDecimal(newPrice, 1, 'COMMA', 2, 'POINT')} + ' ₽'"
+                                                    style="color: #dc3545; font-weight: bold; font-size: 22px;">
+                                                1799.00 ₽
+                                            </strong>
+
+                                        </p>
+                                    </div>
+
+                                    <p style="margin: 20px 0 0 0;">
+                                        Маркетплейс: <strong th:text="${marketplaceSource}">Название
+                                        маркетплейса</strong>
+                                    </p>
+
+                                    <div class="button-container"
+                                         style="text-align: center; margin-top: 30px; margin-bottom: 20px;">
+                                        <a th:href="${productUrl}" class="button" target="_blank"
+                                           style="background-color: #007bff; color: #ffffff; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: 500; font-size: 16px; display: inline-block;">
+                                            Перейти к товару
+                                        </a>
+                                    </div>
+
+                                    <p style="margin: 20px 0 0 0;">
+                                        Спасибо, что пользуетесь нашим сервисом!
+                                    </p>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="footer"
+                                    style="text-align: center; padding: 20px; font-size: 12px; color: #6c757d;">
+                                    <p style="margin: 0;">Это автоматическое уведомление от SearchScope.</p>
+                                    <p style="margin: 5px 0 0 0;">Вы получили это письмо, так как подписались на
+                                        уведомления об изменении цены.</p>
+                                    <p style="margin: 10px 0 0 0;">&copy; 2025 SearchScope. Все права защищены.</p>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </td>
+    </tr>
+</table>
+</body>
+</html>

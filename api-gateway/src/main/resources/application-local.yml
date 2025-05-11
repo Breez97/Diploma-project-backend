@@ -2,29 +2,57 @@ server:
   port: ${API_GATEWAY_PORT:8080}
 
 spring:
+  application:
+    name: API-GATEWAY
   config:
-    import: optional:file:../.env
+    import: optional:file:../../.env
   cloud:
     gateway:
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins:
+              - ${CORS_ALLOWED_ORIGINS}
+            allowedMethods:
+              - GET
+              - POST
+              - OPTIONS
+            allowedHeaders:
+              - Session-Id
+              - Content-Type
+              - Authorization
+            allowCredentials: true
       routes:
         - id: service-search-api
-          uri: http://localhost:${SERVICE_SEARCH_PORT:8081}
+          uri: http://localhost:${SERVICE_SEARCH_PORT:8082}
           predicates:
-            - Path=/api/v1/**
+            - Path=/api/v1/search/**
 
-        - id: service-search-openapi
-          uri: http://localhost:${SERVICE_SEARCH_PORT:8081}
+#        - id: service-search-openapi
+#          uri: http://localhost:${SERVICE_SEARCH_PORT:8082}
+#          predicates:
+#            - Path=/v3/api-docs/service-search
+#          filters:
+#            - RewritePath=/v3/api-docs/service-search, /v3/api-docs
+
+        - id: service-users-api
+          uri: http://localhost:${SERVICE_USERS_PORT:8083}
           predicates:
-            - Path=/v3/api-docs/service-search
-          filters:
-            - RewritePath=/v3/api-docs/service-search, /v3/api-docs
+              - Path=/api/v1/users/**
 
-springdoc:
-  swagger-ui:
-    path: /api-docs
-    urls:
-      - name: service-search
-        url: /v3/api-docs/service-search
-  api-docs:
-    groups:
-      enabled: true
+        - id: service-users-avatars
+          uri: http://localhost:${SERVICE_USERS_PORT:8083}
+          predicates:
+            - Path=/avatars/**
+
+#springdoc:
+#  swagger-ui:
+#    path: /api-docs
+#    urls:
+#      - name: service-search
+#        url: /v3/api-docs/service-search
+#      - name: service-users
+#        url: /v3/api-docs/service-users
+#  api-docs:
+#    groups:
+#      enabled: true

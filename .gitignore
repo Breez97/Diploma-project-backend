@@ -36,6 +36,10 @@ build/
 
 ### Configuration ###
 .env
+.pids
 
-### Vaadin Generated Frontend ###
-/service-vaadin/src/main/frontend/
+### Logs ###
+/logs
+
+### Images ###
+/service-users/uploads

@@ -1,7 +1,6 @@
 package com.breez.handler;
 
-import com.breez.model.Response;
-import com.breez.service.TimestampService;
+import com.breez.dto.Response;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.boot.web.reactive.error.ErrorWebExceptionHandler;
@@ -20,7 +19,6 @@ import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
-import java.util.Map;
 import java.util.Optional;
 
 @Component
@@ -47,10 +45,7 @@ public class GlobalErrorHandler implements ErrorWebExceptionHandler {
 		response.setStatusCode(status);
 		response.getHeaders().setContentType(MediaType.APPLICATION_JSON);
 
-		Response customResponse = new Response();
-		customResponse.setTimestamp(TimestampService.getTimestamp());
-		customResponse.setStatus(Response.Status.STATUS_ERROR.getValue());
-		customResponse.setData(Map.of("message", message));
+		Response<Void> customResponse = Response.error(message);
 
 		try {
 			byte[] responseBytes = objectMapper.writeValueAsBytes(customResponse);
