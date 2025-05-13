@@ -1,102 +1,188 @@
 services:
-  api-gateway:
-    build:
-      context: .
-      dockerfile: api-gateway/Dockerfile
-    container_name: api-gateway-container
-    restart: on-failure
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.1
+    container_name: zookeeper
     ports:
-      - "${API_GATEWAY_PORT:-8080}:${API_GATEWAY_PORT:-8080}"
+      - "2181:2181"
     environment:
-      - SPRING_PROFILES_ACTIVE=docker
-      - API_GATEWAY_PORT=${API_GATEWAY_PORT}
-      - SERVICE_SEARCH_PORT=${SERVICE_SEARCH_PORT}
-    env_file:
-      - ./.env
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
     networks:
       - docker-network
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.1
+    container_name: kafka
     depends_on:
-      - service-search
+      - zookeeper
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:29092,PLAINTEXT_HOST://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_CONFLUENT_LICENSE_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_CONFLUENT_BALANCER_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    networks:
+      - docker-network
+
+  postgres:
+    image: postgres:17
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      SERVICE_USERS_DB_NAME: service-users
+      SERVICE_MONITORING_DB_NAME: service-monitoring
+      SERVICE_NOTIFICATIONS_DB_NAME: service-notifications
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - docker-network
+
+  redis:
+    image: redis:7
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - docker-network
 
   service-search:
     build:
       context: .
       dockerfile: service-search/Dockerfile
-    container_name: service-search-container
+    container_name: service-search
     restart: on-failure
-    ports:
-      - "${SERVICE_SEARCH_PORT:-8081}:${SERVICE_SEARCH_PORT:-8081}"
     environment:
-      - SPRING_PROFILES_ACTIVE=docker
-      - SERVICE_SEARCH_PORT=${SERVICE_SEARCH_PORT}
-      - SPRING_DATA_REDIS_HOST=redis
-      - SPRING_DATA_REDIS_PORT=${SPRING_REDIS_PORT}
-      - SPRING_DATA_REDIS_TIMEOUT=${SPRING_REDIS_TIMEOUT}
+      SPRING_PROFILES_ACTIVE: docker
     env_file:
       - ./.env
     networks:
       - docker-network
     depends_on:
-      - redis
-
-  redis:
-    image: redis:7.4-alpine
-    container_name: redis-container
-    restart: always
-    ports:
-      - "${REDIS_PORT:-6379}:6379"
-    networks:
-      - docker-network
-    volumes:
-      - redis-data:/data
+      redis:
+        condition: service_healthy
 
   service-users:
     build:
       context: .
       dockerfile: service-users/Dockerfile
-    container_name: service-users-container
+    container_name: service-users
     restart: on-failure
-    ports:
-      - "${SERVICE_USERS_PORT:-8082}:${SERVICE_USERS_PORT:-8082}"
     environment:
-      - SPRING_PROFILES_ACTIVE=docker
-      - SERVICE_USERS_PORT=${SERVICE_USERS_PORT}
-      - SPRING_DATASOURCE_HOST=postgres-db
-      - SPRING_DATASOURCE_PORT=5432
-      - SERVICE_USERS_DB_NAME=${SERVICE_USERS_DB_NAME}
-      - SPRING_DATASOURCE_USERNAME=${SPRING_DATASOURCE_USERNAME}
-      - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
-      - JWT_SECRET=${JWT_SECRET}
-      - JWT_ACCESS_TOKEN_EXPIRATION_MS=${JWT_ACCESS_TOKEN_EXPIRATION_MS}
-      - JWT_REFRESH_TOKEN_EXPIRATION_MS=${JWT_REFRESH_TOKEN_EXPIRATION_MS}
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://${SPRING_DATASOURCE_HOST_DOCKER}:${SPRING_DATASOURCE_PORT}/${SERVICE_USERS_DB_NAME}
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: ${SPRING_KAFKA_HOST_DOCKER}:${SPRING_KAFKA_PORT_DOCKER}
+      SERVICE_MONITORING_URL: http://service-monitoring:${SERVER_PORT_SERVICE_MONITORING}/api/internal/monitoring/item/history
+      SERVICE_NOTIFICATIONS_URL: http://service-notifications:${SERVER_PORT_SERVICE_NOTIFICATIONS}/api/internal/notifications
     env_file:
       - ./.env
     networks:
       - docker-network
     depends_on:
-      - postgres-db
+      kafka:
+        condition: service_started
+      postgres:
+        condition: service_healthy
 
-  postgres-db:
-    image: postgres:17
-    container_name: postgres-container
-    restart: always
+  service-monitoring:
+    build:
+      context: .
+      dockerfile: service-monitoring/Dockerfile
+    container_name: service-monitoring
+    restart: on-failure
     environment:
-      POSTGRES_USER: ${SPRING_DATASOURCE_USERNAME}
-      POSTGRES_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
-      POSTGRES_DB: ${SERVICE_USERS_DB_NAME}
-    ports:
-      - "${POSTGRES_HOST_PORT:-5433}:5432"
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://${SPRING_DATASOURCE_HOST_DOCKER}:${SPRING_DATASOURCE_PORT}/${SERVICE_MONITORING_DB_NAME}
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: ${SPRING_KAFKA_HOST_DOCKER}:${SPRING_KAFKA_PORT_DOCKER}
+      SERVICES_SERVICE_SEARCH_URL: http://service-search:${SERVER_PORT_SERVICE_SEARCH}/api/v1/search
+    env_file:
+      - ./.env
     networks:
       - docker-network
+    depends_on:
+      service-search:
+        condition: service_started
+      kafka:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+
+  service-notifications:
+    build:
+      context: .
+      dockerfile: service-notifications/Dockerfile
+    container_name: service-notifications
+    restart: on-failure
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://${SPRING_DATASOURCE_HOST_DOCKER}:${SPRING_DATASOURCE_PORT}/${SERVICE_NOTIFICATIONS_DB_NAME}
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: ${SPRING_KAFKA_HOST_DOCKER}:${SPRING_KAFKA_PORT_DOCKER}
+    env_file:
+      - ./.env
+    networks:
+      - docker-network
+    depends_on:
+      kafka:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
+    container_name: api-gateway
+    restart: on-failure
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SERVICE_SEARCH_URL: http://service-search:${SERVER_PORT_SERVICE_SEARCH}
+      SERVICE_USERS_URL: http://service-users:${SERVER_PORT_SERVICE_USERS}
+      SERVICE_MONITORING_URL: http://service-monitoring:${SERVER_PORT_SERVICE_MONITORING}
+      SERVICE_NOTIFICATIONS_URL: http://service-notifications:${SERVER_PORT_SERVICE_NOTIFICATIONS}
+    env_file:
+      - ./.env
+    networks:
+      - docker-network
+    depends_on:
+      service-search:
+        condition: service_started
+      service-users:
+        condition: service_started
+      service-monitoring:
+        condition: service_started
+      service-notifications:
+        condition: service_started
+
+volumes:
+  postgres-data:
+  redis-data:
 
 networks:
   docker-network:
-    driver: bridge
-
-volumes:
-  redis-data:
-    driver: local
-  postgres-data:
-    driver: local
+    external: true

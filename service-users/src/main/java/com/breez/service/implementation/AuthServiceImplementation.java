@@ -2,6 +2,8 @@ package com.breez.service.implementation;
 
 import com.breez.dto.request.LoginRequest;
 import com.breez.dto.request.RegisterRequest;
+import com.breez.dto.request.ResendCodeRequest;
+import com.breez.dto.request.VerifyRequest;
 import com.breez.dto.response.AuthResponse;
 import com.breez.entity.Mail;
 import com.breez.enums.Role;
@@ -80,35 +82,29 @@ public class AuthServiceImplementation implements AuthService {
 				.lastName(null)
 				.build();
 
-		long verificationCode = generateVerificationCode();
-		if (skipCodeVerification) {
-			verificationCode = SKIP_VERIFICATION_CODE_VALUE;
-		}
-		LocalDateTime expiryTime = LocalDateTime.now().plusMinutes(VERIFICATION_CODE_EXPIRATION_MINUTES);
-		UserVerification verification = UserVerification.builder()
-				.user(newUser)
-				.code(verificationCode)
-				.verificationType(VerificationType.EMAIL)
-				.expiryTime(expiryTime)
-				.build();
-
+		UserVerification userVerification = getUserVerification(newUser, null);
 		userRepository.save(newUser);
-		userVerificationRepository.save(verification);
-
-		logger.info("Generated verification code {{}} for user {}", verificationCode, newUser.getEmail());
-		if (!skipCodeVerification) {
-			try {
-				Mail mail = Mail.builder().receiver(email).subject("EasyFind: Verification code").code(String.valueOf(verificationCode)).build();
-				mailService.sendEmailWithThymeleaf(mail);
-			} catch (MailException | MessagingException e) {
-				logger.error(Arrays.toString(e.getStackTrace()));
-			}
-		}
+		userVerificationRepository.save(userVerification);
 	}
 
 	@Override
 	@Transactional
-	public void verify(String email, Long code) {
+	public void resendCode(ResendCodeRequest request) {
+		String email = request.getEmail();
+		User referenceUser = userRepository.findByEmail(email)
+				.orElseThrow(() -> new UserNotFoundException("User not found with email: " + email));
+		UserVerification userVerification = userVerificationRepository.findByUserId(referenceUser.getId())
+				.orElseThrow(() -> new VerificationException("User verification not found with email: " + email));
+
+		UserVerification newUserVerification = getUserVerification(referenceUser, userVerification);
+		userVerificationRepository.save(newUserVerification);
+	}
+
+	@Override
+	@Transactional
+	public void verify(VerifyRequest request) {
+		String email = request.getEmail();
+		Long code = request.getCode();
 		if (skipCodeVerification) {
 			code = SKIP_VERIFICATION_CODE_VALUE;
 		}
@@ -198,6 +194,35 @@ public class AuthServiceImplementation implements AuthService {
 		User user = refreshTokenEntity.getUser();
 		String newAccessToken = jwtTokenProvider.generateAccessToken(user.getEmail());
 		return mapToDto(user.getId(), newAccessToken, refreshTokenValue);
+	}
+
+	private UserVerification getUserVerification(User user, UserVerification userVerification) {
+		long verificationCode = generateVerificationCode();
+		if (skipCodeVerification) {
+			verificationCode = SKIP_VERIFICATION_CODE_VALUE;
+		}
+		LocalDateTime expiryTime = LocalDateTime.now().plusMinutes(VERIFICATION_CODE_EXPIRATION_MINUTES);
+
+		UserVerification newUserVerification = UserVerification.builder()
+				.user(user)
+				.code(verificationCode)
+				.verificationType(VerificationType.EMAIL)
+				.expiryTime(expiryTime)
+				.build();
+		if (userVerification != null) {
+			newUserVerification.setId(userVerification.getId());
+		}
+
+		logger.info("Generated new verification code {{}} for user {}", verificationCode, user.getEmail());
+		if (!skipCodeVerification) {
+			try {
+				Mail mail = Mail.builder().receiver(user.getEmail()).subject("EasyFind: Verification code").code(String.valueOf(verificationCode)).build();
+				mailService.sendEmailWithThymeleaf(mail);
+			} catch (MailException | MessagingException e) {
+				logger.error(Arrays.toString(e.getStackTrace()));
+			}
+		}
+		return newUserVerification;
 	}
 
 	private long generateVerificationCode() {

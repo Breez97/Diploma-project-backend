@@ -9,6 +9,7 @@ import com.breez.model.ProductChunkResult;
 import com.breez.service.ProductsFetchingService;
 import com.breez.service.ValidationService;
 import com.breez.service.marketplace.OzonService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -28,6 +29,7 @@ public class OzonController {
 	private final ProductsFetchingService productsFetchingService;
 	private final ValidationService validationService;
 
+	@Operation(summary = "Получение информации о товарах с Ozon")
 	@GetMapping(value = "/ozon", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Response<ProductsSearchResponse>> fetchProductsOzon(
 			@RequestHeader(value = "Session-Id", required = false) String sessionId,
@@ -38,6 +40,7 @@ public class OzonController {
 		return ResponseEntity.ok(Response.success(response, "Ozon: products found successfully"));
 	}
 
+	@Operation(summary = "ПОлучение информации о конкретном товаре с Ozon")
 	@GetMapping(value = "/ozon/product", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Response<ProductDetailsDto>> fetchSingleProductOzon(
 			@RequestHeader(value = "Session-Id", required = false) String sessionId,

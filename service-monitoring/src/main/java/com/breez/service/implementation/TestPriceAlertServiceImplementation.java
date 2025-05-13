@@ -15,7 +15,7 @@ public class TestPriceAlertServiceImplementation implements TestPriceAlertServic
 
 	private final KafkaTemplate<String, PriceAlertEventDto> kafkaTemplate;
 
-	@Value("${app.kafka.topic.user-price-alerts}")
+	@Value("${kafka.topic.user-price-alerts}")
 	private String userPriceAlertsTopic;
 
 	@Value("${test.notifications.email}")

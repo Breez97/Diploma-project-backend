@@ -7,6 +7,7 @@ import com.breez.model.ProductChunkResult;
 import com.breez.service.CombinedProductFetchingService;
 import com.breez.service.ValidationService;
 import com.breez.service.MarketplaceService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,6 +47,7 @@ public class CombinedController {
 				));
 	}
 
+	@Operation(summary = "Получение информации о товарах с разных маркетплейсов")
 	@GetMapping(value = "/combined", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Response<ProductsSearchResponse>> fetchProductsCombined(
 			@RequestHeader(value = "Session-Id", required = false) String sessionId,

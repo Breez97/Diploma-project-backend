@@ -34,18 +34,16 @@ public class FavoritesServiceImplementation implements FavoritesService {
 	private final UserFavoriteRepository userFavoriteRepository;
 	private final UserRepository userRepository;
 
-	private final String userFavoritesTopic;
-	private final String userNotificationsTopic;
+	@Value("${kafka.topic.user-favorites}")
+	private String userFavoritesTopic;
+	@Value("${kafka.topic.user-notifications}")
+	private String userNotificationsTopic;
 
 	@Autowired
 	public FavoritesServiceImplementation(KafkaTemplate<String, Object> kafkaTemplate,
-										  @Value("${app.kafka.topic.user-favorites}") String userFavoritesTopic,
-										  @Value("${app.kafka.topic.user-notifications}") String userNotificationsTopic,
 										  UserFavoriteRepository userFavoriteRepository,
 										  UserRepository userRepository) {
 		this.kafkaTemplate = kafkaTemplate;
-		this.userFavoritesTopic = userFavoritesTopic;
-		this.userNotificationsTopic = userNotificationsTopic;
 		this.userFavoriteRepository = userFavoriteRepository;
 		this.userRepository = userRepository;
 	}

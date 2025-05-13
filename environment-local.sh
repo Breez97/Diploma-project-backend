@@ -20,11 +20,15 @@ set_environment() {
 # run local environment
 if [[ "$1" == "up" ]]; then
 	set_environment
-	echo "Starting environment in docker locally"
-	docker compose -f docker-compose-local-environment.yml up -d
+	echo "Starting environment in docker"
+	docker compose -f docker-compose-environment-local.yml up -d
+elif [[ "$1" == "up" && "$2" == "kafka" ]]; then
+	set_environment
+	echo "Starting environment in docker: only kafka"
+	docker compose -f docker-compose-environment-local.yml up -d kafka
 elif [[ "$1" == "down" ]]; then
-	echo "Stoping environment in docker locally"
-	docker compose -f docker-compose-local-environment.yml down -v
+	echo "Stoping environment in docker"
+	docker compose -f docker-compose-environment-local.yml down -v
 else
 	echo "Invalid parameter"
 	echo "Valid: up/down"

@@ -32,7 +32,7 @@ public class PriceUpdateSchedulerImplementation implements PriceUpdateScheduler 
 	private final ProductSearchService productSearchService;
 	private final KafkaTemplate<String, PriceAlertEventDto> kafkaTemplate;
 
-	@Value("${app.kafka.topic.user-price-alerts}")
+	@Value("${kafka.topic.user-price-alerts}")
 	private String userPriceAlertsTopic;
 
 	private static final int MAX_PRICE_HISTORY_ENTRIES = 5;
