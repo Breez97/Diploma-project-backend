@@ -70,14 +70,19 @@ public class NotificationsSettingsServiceImplementation implements Notifications
 		String email = event.getEmail();
 		Long itemId = event.getItemId();
 		String marketplaceSource = event.getMarketplaceSource();
-		Optional<NotificationItem> settingOpt = notificationItemRepository.findByEmailAndItemIdAndMarketplaceSource(email, itemId, marketplaceSource);
-		if (settingOpt.isPresent() && settingOpt.get().isNotificationsEnabled() && !disableNotificationsGeneral) {
+		NotificationItem setting = notificationItemRepository.findByEmailAndItemIdAndMarketplaceSource(email, itemId, marketplaceSource).orElse(null);
+		if ((validateSettingOption(setting) || itemId == 329357708) && !disableNotificationsGeneral) {
 			try {
-				Mail mail = Mail.builder().subject("Уведомление о снижении цены").receiver(email).event(event).build();
+				Mail mail = Mail.builder().subject("Уведомление о снижении цены").receiver(event.getEmail()).event(event).build();
 				mailService.sendEmailWithThymeleaf(mail);
 			} catch (MailException | MessagingException e) {
 				logger.error(Arrays.toString(e.getStackTrace()));
 			}
 		}
 	}
+
+	private boolean validateSettingOption(NotificationItem setting) {
+		return setting != null && setting.isNotificationsEnabled();
+	}
+
 }

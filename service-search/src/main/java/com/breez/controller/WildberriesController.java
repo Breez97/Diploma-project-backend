@@ -10,6 +10,7 @@ import com.breez.model.ProductChunkResult;
 import com.breez.service.ProductsFetchingService;
 import com.breez.service.ValidationService;
 import com.breez.service.marketplace.WildberriesService;
+import io.swagger.v3.oas.annotations.Operation;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -29,6 +30,7 @@ public class WildberriesController {
 	private final ValidationService validationService;
 	private final WildberriesService wildberriesService;
 
+	@Operation(summary = "Получение информации о товарах с Wildberries")
 	@GetMapping(value = "/wildberries", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Response<ProductsSearchResponse>> fetchProductsWildberries(
 			@RequestHeader(value = "Session-Id", required = false) String sessionId,
@@ -44,6 +46,7 @@ public class WildberriesController {
 		return ResponseEntity.ok(Response.success(response, "Wildberries: products found successfully"));
 	}
 
+	@Operation(summary = "Получение информации о конкретном товаре с Wildberries")
 	@GetMapping(value = "/wildberries/product", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Response<ProductDetailsDto>> fetchSingleProductWildberries(
 			@RequestHeader(value = "Session-Id", required = false) String sessionId,

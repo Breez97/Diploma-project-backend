@@ -6,9 +6,7 @@ import com.breez.dto.response.ServiceMonitoringResponseDto;
 import com.breez.enums.Status;
 import com.breez.exception.NoPriceHistoryFoundException;
 import com.breez.service.PriceService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -18,18 +16,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 @Service
+@RequiredArgsConstructor
 public class PriceServiceImplementation implements PriceService {
 
-	private static final Logger logger = LoggerFactory.getLogger(PriceServiceImplementation.class);
-
 	private final RestTemplate restTemplate;
-	private final String serviceMonitoringBaseUrl;
 
-	@Autowired
-	public PriceServiceImplementation(RestTemplate restTemplate, @Value("${app.services.monitoring.url}") String serviceMonitoringBaseUrl) {
-		this.restTemplate = restTemplate;
-		this.serviceMonitoringBaseUrl = serviceMonitoringBaseUrl;
-	}
+	@Value("${services.monitoring.url}")
+	private String serviceMonitoringBaseUrl;
 
 	@Override
 	public PriceHistoryResponse getPriceHistory(String email, PriceRequest request) {

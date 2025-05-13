@@ -18,12 +18,12 @@ public class NotificationsEventConsumerImplementation implements NotificationsEv
 	private final NotificationsSettingsService notificationsSettingsService;
 
 	@Override
-	@KafkaListener(topics = "${app.kafka.topic.user-notifications}", groupId = "${spring.kafka.consumer.group-id}")
+	@KafkaListener(topics = "${kafka.topic.user-notifications}", groupId = "${spring.kafka.consumer.group-id}")
 	public void handleNotificationsEvent(NotificationsEventDto event) {
 		notificationsSettingsService.processNotificationEvent(event);
 	}
 
-	@KafkaListener(topics = "${app.kafka.topic.user-price-alerts}", groupId = "${spring.kafka.consumer.group-id}-alerts")
+	@KafkaListener(topics = "${kafka.topic.user-price-alerts}", groupId = "${spring.kafka.consumer.group-id}-alerts")
 	public void handlerPriceAlertsEvents(PriceAlertEventDto event) {
 		notificationsSettingsService.priceAlertEventDto(event);
 	}

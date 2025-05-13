@@ -9,6 +9,8 @@ import java.util.Optional;
 @Repository
 public interface UserVerificationRepository extends JpaRepository<UserVerification, Long> {
 
+	Optional<UserVerification> findByUserId(Long userId);
+
 	Optional<UserVerification> findByUserIdAndCode(Long userId, Long code);
 
 }

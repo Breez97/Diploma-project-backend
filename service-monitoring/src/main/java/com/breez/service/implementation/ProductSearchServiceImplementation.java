@@ -26,7 +26,7 @@ public class ProductSearchServiceImplementation implements ProductSearchService 
 	private final String productSearchServiceUrl;
 
 	@Autowired
-	public ProductSearchServiceImplementation(RestTemplate restTemplate, @Value("${app.services.service-search.url}") String productSearchServiceUrl) {
+	public ProductSearchServiceImplementation(RestTemplate restTemplate, @Value("${services.service-search.url}") String productSearchServiceUrl) {
 		this.restTemplate = restTemplate;
 		this.productSearchServiceUrl = productSearchServiceUrl;
 	}

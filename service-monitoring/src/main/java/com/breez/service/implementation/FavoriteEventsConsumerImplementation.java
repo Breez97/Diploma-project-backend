@@ -30,7 +30,7 @@ public class FavoriteEventsConsumerImplementation implements FavoriteEventsConsu
 
 	@Override
 	@Transactional
-	@KafkaListener(topics = "${app.kafka.topic.user-favorites}", groupId = "${spring.kafka.consumer.group-id}")
+	@KafkaListener(topics = "${kafka.topic.user-favorites}", groupId = "${spring.kafka.consumer.group-id}")
 	public void handleFavoritesEvent(@Payload FavoritesEventDto event) {
 		if (!validationService.isValidFavoriteChangeEventDto(event)) {
 			logger.warn("Received invalid favorite change event");

@@ -19,10 +19,10 @@ COPY service-notifications ./service-notifications
 COPY service-search ./service-search/
 COPY service-users ./service-users/
 
-RUN mvn package -pl service-search -am -DskipTests -Dmaven.test.skip=true --batch-mode
+RUN mvn package -pl service-monitoring -am -DskipTests -Dmaven.test.skip=true --batch-mode
 
 # --- Execution --- #
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
-COPY --from=builder /build/service-search/target/service-search.jar /app/service-search.jar
-ENTRYPOINT ["java", "-jar", "/app/service-search.jar"]
+COPY --from=builder /build/service-monitoring/target/service-monitoring.jar /app/service-monitoring.jar
+ENTRYPOINT ["java", "-jar", "/app/service-monitoring.jar"]

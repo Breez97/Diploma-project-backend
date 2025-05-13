@@ -43,3 +43,6 @@ build/
 
 ### Images ###
 /service-users/uploads
+
+### Docker Compose Private ###
+docker-compose-with-params.yml

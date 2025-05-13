@@ -1,9 +1,9 @@
 server:
-  port: ${API_GATEWAY_PORT:8080}
+  port: ${SERVER_PORT_API_GATEWAY}
 
 spring:
   application:
-    name: API-GATEWAY
+    name: ${SPRING_APPLICATION_NAME_API_GATEWAY}
   cloud:
     gateway:
       globalcors:
@@ -14,6 +14,8 @@ spring:
             allowedMethods:
               - GET
               - POST
+              - PUT
+              - DELETE
               - OPTIONS
             allowedHeaders:
               - Session-Id
@@ -22,35 +24,65 @@ spring:
             allowCredentials: true
       routes:
         - id: service-search-api
-          uri: http://service-search:${SERVICE_SEARCH_PORT:8082}
+          uri: ${SERVICE_SEARCH_URL}
           predicates:
             - Path=/api/v1/search/**
 
-#        - id: service-search-openapi
-#          uri: http://service-search:${SERVICE_SEARCH_PORT:8082}
-#          predicates:
-#            - Path=/v3/api-docs/service-search
-#          filters:
-#            - RewritePath=/v3/api-docs/service-search, /v3/api-docs
+        - id: service-search-openapi
+          uri:  ${SERVICE_SEARCH_URL}
+          predicates:
+            - Path=/v3/api-docs/service-search
+          filters:
+            - RewritePath=/v3/api-docs/service-search, /v3/api-docs
 
         - id: service-users-api
-          uri: http://service-users:${SERVICE_USERS_PORT:8083}
+          uri: ${SERVICE_USERS_URL}
           predicates:
             - Path=/api/v1/users/**
 
         - id: service-users-avatars
-          uri: http://service-users:${SERVICE_USERS_PORT:8083}
+          uri: ${SERVICE_USERS_URL}
           predicates:
             - Path=/avatars/**
 
-#springdoc:
-#  swagger-ui:
-#    path: /api-docs
-#    urls:
-#      - name: service-search
-#        url: /v3/api-docs/service-search
-#      - name: service-users
-#        url: /v3/api-docs/service-users
-#  api-docs:
-#    groups:
-#      enabled: true
+        - id: service-users-openapi
+          uri: ${SERVICE_USERS_URL}
+          predicates:
+            - Path=/v3/api-docs/service-users
+          filters:
+            - RewritePath=/v3/api-docs/service-users, /v3/api-docs
+
+        - id: service-monitoring-openapi
+          uri: ${SERVICE_MONITORING_URL}
+          predicates:
+            - Path=/v3/api-docs/service-monitoring
+          filters:
+            - RewritePath=/v3/api-docs/service-monitoring, /v3/api-docs
+
+        - id: service-monitoring-test-price-alert
+          uri: ${SERVICE_MONITORING_URL}
+          predicates:
+            - Path=/api/v1/send-test-alert
+
+        - id: service-notifications-openapi
+          uri: ${SERVICE_NOTIFICATIONS_URL}
+          predicates:
+            - Path=/v3/api-docs/service-notifications
+          filters:
+            - RewritePath=/v3/api-docs/service-notifications, /v3/api-docs
+
+springdoc:
+  swagger-ui:
+    path: /api-docs
+    urls:
+      - name: service-search
+        url: /v3/api-docs/service-search
+      - name: service-users
+        url: /v3/api-docs/service-users
+      - name: service-monitoring
+        url: /v3/api-docs/service-monitoring
+      - name: service-notifications
+        url: /v3/api-docs/service-notifications
+  api-docs:
+    groups:
+      enabled: true

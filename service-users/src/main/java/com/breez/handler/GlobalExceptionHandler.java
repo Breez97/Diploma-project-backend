@@ -58,8 +58,8 @@ public class GlobalExceptionHandler {
 		return exceptionHandlerResponse(e, HttpStatus.CONFLICT);
 	}
 
-	@ExceptionHandler(ServerException.class)
-	public ResponseEntity<Response<Void>> internalServerErrorHandlerException(ServerException e) {
+	@ExceptionHandler({ServerException.class, ToggleServiceException.class})
+	public ResponseEntity<Response<Void>> internalServerErrorHandlerException(CustomException e) {
 		return exceptionHandlerResponse(e, HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 

@@ -9,9 +9,8 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ToggleNotificationsResponse {
+public class NotificationsResponse {
 
-	private String email;
 	private Long itemId;
 	private String marketplaceSource;
 	private Boolean isEnabled;
