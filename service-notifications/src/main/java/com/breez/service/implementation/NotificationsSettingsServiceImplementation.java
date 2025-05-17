@@ -73,7 +73,7 @@ public class NotificationsSettingsServiceImplementation implements Notifications
 		NotificationItem setting = notificationItemRepository.findByEmailAndItemIdAndMarketplaceSource(email, itemId, marketplaceSource).orElse(null);
 		if ((validateSettingOption(setting) || itemId == 329357708) && !disableNotificationsGeneral) {
 			try {
-				Mail mail = Mail.builder().subject("Уведомление о снижении цены").receiver(event.getEmail()).event(event).build();
+				Mail mail = Mail.builder().subject("SearchScope: Уведомление о снижении цены").receiver(event.getEmail()).event(event).build();
 				mailService.sendEmailWithThymeleaf(mail);
 			} catch (MailException | MessagingException e) {
 				logger.error(Arrays.toString(e.getStackTrace()));

@@ -8,6 +8,7 @@ import com.breez.service.CombinedProductFetchingService;
 import com.breez.service.ValidationService;
 import com.breez.service.MarketplaceService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +23,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/search")
+@Tag(name = "Combined Controller")
 public class CombinedController {
 
 	private static final Logger logger = LoggerFactory.getLogger(CombinedController.class);

@@ -3,6 +3,7 @@ package com.breez.controller;
 import com.breez.dto.Response;
 import com.breez.service.TestPriceAlertService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/send-test-alert")
 @RequiredArgsConstructor
+@Tag(name = "Test Price Alert Controller")
 public class TestPriceAlertController {
 
 	private final TestPriceAlertService testPriceAlertService;

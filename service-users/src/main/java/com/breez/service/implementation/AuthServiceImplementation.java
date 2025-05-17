@@ -216,7 +216,7 @@ public class AuthServiceImplementation implements AuthService {
 		logger.info("Generated new verification code {{}} for user {}", verificationCode, user.getEmail());
 		if (!skipCodeVerification) {
 			try {
-				Mail mail = Mail.builder().receiver(user.getEmail()).subject("EasyFind: Verification code").code(String.valueOf(verificationCode)).build();
+				Mail mail = Mail.builder().receiver(user.getEmail()).subject("SearchScope: Подтверждение электронной почты").code(String.valueOf(verificationCode)).build();
 				mailService.sendEmailWithThymeleaf(mail);
 			} catch (MailException | MessagingException e) {
 				logger.error(Arrays.toString(e.getStackTrace()));

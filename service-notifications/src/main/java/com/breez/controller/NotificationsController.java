@@ -6,6 +6,7 @@ import com.breez.dto.request.NotificationToggleRequest;
 import com.breez.dto.response.NotificationsResponse;
 import com.breez.service.NotificationsService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/internal/notifications")
 @RequiredArgsConstructor
+@Tag(name = "Notifications Controller")
 public class NotificationsController {
 
 	private final NotificationsService notificationsService;

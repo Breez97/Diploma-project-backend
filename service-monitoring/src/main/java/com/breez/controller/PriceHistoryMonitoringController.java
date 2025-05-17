@@ -5,6 +5,7 @@ import com.breez.dto.request.PriceRequest;
 import com.breez.dto.response.PriceHistoryResponse;
 import com.breez.service.PriceHistoryService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/internal/monitoring")
 @RequiredArgsConstructor
+@Tag(name = "Price History Monitoring Controller")
 public class PriceHistoryMonitoringController {
 
 	private final PriceHistoryService priceHistoryService;

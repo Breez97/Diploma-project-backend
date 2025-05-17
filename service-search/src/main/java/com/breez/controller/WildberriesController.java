@@ -11,6 +11,7 @@ import com.breez.service.ProductsFetchingService;
 import com.breez.service.ValidationService;
 import com.breez.service.marketplace.WildberriesService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/api/v1/search")
 @RequiredArgsConstructor
+@Tag(name = "Wildberries Controller")
 public class WildberriesController {
 
 	private static final Logger logger = LoggerFactory.getLogger(WildberriesController.class);
