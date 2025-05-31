@@ -1,6 +1,4 @@
-# Search Scope (Diploma Project)
-
-### [Frontend (React)](https://github.com/Breez97/Diploma-project-frontend)
+# Marketplace Aggregator
 
 ### API Documentation
 
